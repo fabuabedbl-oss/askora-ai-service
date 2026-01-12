@@ -68,12 +68,9 @@ def clean_json(text: str) -> dict:
         raise ValueError(f"Invalid JSON returned:\n{text}")
 
 def generate(prompt: str) -> str:
-    """
-    Calls Gemini API using a STABLE FREE-TIER model
-    """
     try:
         response = client.models.generate_content(
-            model="gemini-1.0-pro",  # ✅ ONLY SAFE MODEL FOR FREE TIER
+            model="gemini-2.5-flash",  # ✅ SUPPORTED & ACTIVE
             contents=prompt
         )
         return response.text or ""
@@ -82,6 +79,7 @@ def generate(prompt: str) -> str:
             status_code=500,
             detail=f"Model generation failed: {str(e)}"
         )
+
 
 # =========================
 # Prompt rules & schemas

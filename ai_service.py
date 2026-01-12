@@ -1,28 +1,37 @@
 import os
 import json
 import re
+from typing import Dict
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
-# ----------------------------
-# Environment
-# ----------------------------
+# ============================
+# Environment & App
+# ============================
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=API_KEY) if API_KEY else None
+if not API_KEY:
+    raise RuntimeError("Missing API key")
 
-app = FastAPI(title="Askora AI Service", version="1.3.1")
+client = genai.Client(api_key=API_KEY)
 
-# ----------------------------
-# Topic mapping (IMPORTANT)
-# ----------------------------
-TOPIC_NAME_MAP = {
+app = FastAPI(
+    title="Askora AI Service",
+    version="1.3.1",
+    description="AI educational service for BTEC IT students"
+)
+
+# ============================
+# Topic Mapping (IMPORTANT)
+# ============================
+TOPIC_NAME_MAP: Dict[str, str] = {
     "Event-Driven Programming": "event_driven",
     "Object-Oriented Programming (OOP)": "oop",
-    "Procedural Programming": "procedural"
+    "Procedural Programming": "procedural",
 }
 
 TOPIC_TO_FILE = {
@@ -31,9 +40,19 @@ TOPIC_TO_FILE = {
     "procedural": "rag_data/procedural.txt",
 }
 
-# ----------------------------
+def load_topic_context(topic_name: str) -> str:
+    internal = TOPIC_NAME_MAP.get(topic_name)
+    if not internal:
+        return ""
+    path = TOPIC_TO_FILE.get(internal)
+    if not path or not os.path.exists(path):
+        return ""
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+# ============================
 # Helpers
-# ----------------------------
+# ============================
 def strip_code_fences(text: str) -> str:
     t = (text or "").strip()
     if t.startswith("```"):
@@ -41,46 +60,81 @@ def strip_code_fences(text: str) -> str:
         t = re.sub(r"\s*```$", "", t)
     return t.strip()
 
-def generate(prompt: str) -> str:
-    if not client:
-        raise RuntimeError("Model unavailable")
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt
-    )
-    return response.text or ""
+def safe_generate(prompt: str) -> str:
+    """
+    Wrapper to handle Gemini errors safely (quota, overload, etc.)
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",  # ✅ safer for free tier
+            contents=prompt
+        )
+        return response.text or ""
+    except Exception as e:
+        return json.dumps({
+            "error": "Model generation failed",
+            "details": str(e)
+        })
 
-# ----------------------------
-# Static fallback lessons (IMPORTANT)
-# ----------------------------
-STATIC_LESSONS = {
-    "event_driven": {
-        "site_greeting": "مرحبًا بك في Askora",
-        "title": "Event-Driven Programming",
-        "overview": (
-            "البرمجة المعتمدة على الأحداث هي أسلوب برمجي يعتمد على تنفيذ الأوامر "
-            "عند حدوث حدث معين مثل ضغط زر أو إدخال المستخدم. بدلاً من تنفيذ الكود "
-            "بشكل متسلسل، يبقى البرنامج في حالة انتظار حتى يحدث تفاعل، ثم يستجيب له. "
-            "هذا الأسلوب شائع في واجهات المستخدم والتطبيقات التفاعلية."
-        ),
-        "key_terms": [
-            {"term_ar": "الحدث", "term_en": "Event", "definition_ar": "إشارة لحدوث فعل معين"},
-            {"term_ar": "معالج الحدث", "term_en": "Event Handler", "definition_ar": "كود ينفذ عند وقوع الحدث"},
-            {"term_ar": "مستمع الحدث", "term_en": "Event Listener", "definition_ar": "جزء يراقب حدوث الحدث"},
-            {"term_ar": "حلقة الأحداث", "term_en": "Event Loop", "definition_ar": "آلية تنتظر وتدير الأحداث"}
-        ],
-        "example": {
-            "description_ar": "مثال بسيط يوضح الفكرة",
-            "code": "print('Button clicked')",
-            "explain_ar": "يتم تنفيذ الكود عند حدوث حدث الضغط"
-        },
-        "out_of_scope_notice": "هذا الدرس يشرح المفهوم العام فقط"
-    }
+# ============================
+# Prompts (GLOBAL)
+# ============================
+SYSTEM_RULES = """
+أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
+
+التعليمات:
+- اشرح بالعربية الفصحى المبسطة.
+- ضع المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر.
+- التزم بالتوبك الحالي فقط.
+- مسموح التوسع في الشرح وإضافة أمثلة تعليمية.
+- ممنوع ذكر AI أو prompts أو ملفات أو أنظمة داخلية.
+"""
+
+LESSON_SCHEMA = """
+أخرج JSON فقط بالشكل التالي:
+{
+  "site_greeting": "",
+  "title": "",
+  "overview": "",
+  "key_terms": [{"term_ar":"","term_en":"","definition_ar":""}],
+  "example": {"description_ar":"","code":"","explain_ar":""},
+  "out_of_scope_notice": ""
 }
+"""
 
-# ----------------------------
+PRACTICE_SCHEMA = """
+أخرج JSON فقط:
+{
+  "question_ar": "",
+  "answer_ar": "",
+  "hint_ar": ""
+}
+"""
+
+QUIZ_SCHEMA = """
+أخرج JSON فقط:
+{
+  "question_ar": "",
+  "choices": ["", "", "", ""],
+  "correct_index": 0,
+  "explain_ar": ""
+}
+"""
+
+CHAT_SCHEMA = """
+أخرج JSON فقط:
+{
+  "scope": "IN_SCOPE أو OUT_OF_SCOPE",
+  "answer_ar": "",
+  "related_to_topic": true/false
+}
+"""
+
+REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora. افتح درسًا مناسبًا أو اسأل ضمن موضوع الصفحة الحالية."
+
+# ============================
 # API Models
-# ----------------------------
+# ============================
 class TopicRequest(BaseModel):
     topic: str
 
@@ -88,81 +142,108 @@ class ChatRequest(BaseModel):
     topic: str
     message: str
 
-# ----------------------------
+# ============================
 # Endpoints
-# ----------------------------
+# ============================
 @app.get("/")
 def root():
     return {"message": "Askora AI Service is running. Visit /docs"}
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# -------- LESSON --------
 @app.post("/lesson")
 def lesson(req: TopicRequest):
-    internal = TOPIC_NAME_MAP.get(req.topic)
-    if not internal:
+    context = load_topic_context(req.topic)
+    if not context:
         return {"error": "Topic not found"}
 
-    try:
-        prompt = f"""
-اشرح موضوع {req.topic} شرحًا تعليميًا مناسبًا لطلاب BTEC.
-أخرج JSON فقط بالشكل التالي:
-{{
-  "site_greeting": "",
-  "title": "",
-  "overview": "",
-  "key_terms": [],
-  "example": {{}},
-  "out_of_scope_notice": ""
-}}
-"""
-        return json.loads(strip_code_fences(generate(prompt)))
-    except Exception:
-        return STATIC_LESSONS.get(internal, {"error": "Lesson unavailable"})
+    prompt = f"""
+{SYSTEM_RULES}
+{LESSON_SCHEMA}
 
+السياق:
+\"\"\"
+{context}
+\"\"\"
+
+اشرح التوبك شرحًا تعليميًا عامًا ومتكاملًا بدون أسئلة أو كويز.
+"""
+    raw = safe_generate(prompt)
+    return json.loads(strip_code_fences(raw))
+
+# -------- PRACTICE --------
 @app.post("/practice")
 def practice(req: TopicRequest):
-    return {
-        "question_ar": "ما المقصود بالحدث في Event-Driven Programming؟",
-        "answer_ar": "هو إشارة لحدوث تفاعل معين في النظام",
-        "hint_ar": "فكر بتفاعل المستخدم"
-    }
+    context = load_topic_context(req.topic)
+    if not context:
+        return {"error": "Topic not found"}
 
+    prompt = f"""
+{SYSTEM_RULES}
+{PRACTICE_SCHEMA}
+
+السياق:
+\"\"\"
+{context}
+\"\"\"
+
+أنشئ سؤال تدريب واحد مناسب للمبتدئين.
+"""
+    raw = safe_generate(prompt)
+    return json.loads(strip_code_fences(raw))
+
+# -------- QUIZ --------
 @app.post("/quiz")
 def quiz(req: TopicRequest):
-    return {
-        "question_ar": "ما وظيفة Event Handler؟",
-        "choices": [
-            "مراقبة الأحداث",
-            "تنفيذ الكود عند الحدث",
-            "إنشاء الواجهة",
-            "إيقاف البرنامج"
-        ],
-        "correct_index": 1,
-        "explain_ar": "معالج الحدث ينفذ الكود عند وقوع الحدث"
-    }
+    context = load_topic_context(req.topic)
+    if not context:
+        return {"error": "Topic not found"}
 
+    prompt = f"""
+{SYSTEM_RULES}
+{QUIZ_SCHEMA}
+
+السياق:
+\"\"\"
+{context}
+\"\"\"
+
+أنشئ سؤال اختيار من متعدد واحد.
+"""
+    raw = safe_generate(prompt)
+    data = json.loads(strip_code_fences(raw))
+    data["grading_rule"] = "Correct answer = 100%, wrong = 0%"
+    return data
+
+# -------- CHAT --------
 @app.post("/chat")
 def chat(req: ChatRequest):
-    internal = TOPIC_NAME_MAP.get(req.topic)
-    if not internal:
+    context = load_topic_context(req.topic)
+    if not context:
         return {
             "scope": "OUT_OF_SCOPE",
-            "answer_ar": "سؤالك خارج نطاق هذا الدرس في Askora.",
+            "answer_ar": REJECT_TEXT,
             "related_to_topic": False
         }
 
-    try:
-        prompt = f"""
-أجب على السؤال التالي ضمن موضوع {req.topic} فقط:
+    prompt = f"""
+{SYSTEM_RULES}
+{CHAT_SCHEMA}
+
+السياق:
+\"\"\"
+{context}
+\"\"\"
+
+سؤال الطالب:
+\"\"\"
 {req.message}
+\"\"\"
+
+إذا السؤال مرتبط بالتوبك أجب، وإذا لا استخدم نص الرفض حرفيًا.
 """
-        return {
-            "scope": "IN_SCOPE",
-            "answer_ar": generate(prompt),
-            "related_to_topic": True
-        }
-    except Exception:
-        return {
-            "scope": "IN_SCOPE",
-            "answer_ar": "الحدث هو إشارة لحدوث تفاعل داخل النظام.",
-            "related_to_topic": True
-        }
+    raw = safe_generate(prompt)
+    return json.loads(strip_code_fences(raw))

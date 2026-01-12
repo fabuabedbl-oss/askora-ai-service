@@ -6,9 +6,9 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
-# ============================
+# =========================
 # Environment
-# ============================
+# =========================
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -22,10 +22,10 @@ app = FastAPI(
     version="1.3.0"
 )
 
-# ============================
-# Topic Mapping (CRITICAL)
-# ============================
-# Backend MUST send topic exactly like these keys
+# =========================
+# Topic Mapping (IMPORTANT)
+# =========================
+# 👈 هذه هي القيم اللي لازم يبعثها الباك-إند حرفيًا
 TOPIC_NAME_MAP = {
     "Event-Driven Programming": "event_driven",
     "Object-Oriented Programming (OOP)": "oop",
@@ -35,82 +35,86 @@ TOPIC_NAME_MAP = {
 TOPIC_TO_FILE = {
     "event_driven": "rag_data/event_driven.txt",
     "oop": "rag_data/oop.txt",
-    "procedural": "rag_data/procedural.txt",
+    "procedural": "rag_data/procedural.txt"
 }
 
 def load_topic_context(topic_name: str) -> str:
-    internal_key = TOPIC_NAME_MAP.get(topic_name)
-    if not internal_key:
+    internal = TOPIC_NAME_MAP.get(topic_name)
+    if not internal:
         return ""
 
-    path = TOPIC_TO_FILE.get(internal_key)
+    path = TOPIC_TO_FILE.get(internal)
     if not path or not os.path.exists(path):
         return ""
 
     with open(path, "r", encoding="utf-8") as f:
         return f.read().strip()
 
-# ============================
+# =========================
 # Helpers
-# ============================
+# =========================
 def strip_code_fences(text: str) -> str:
-    """
-    Removes ```json ``` safely
-    """
-    if not text:
-        return ""
-    t = text.strip()
-    t = re.sub(r"^```(?:json)?", "", t, flags=re.IGNORECASE).strip()
-    t = re.sub(r"```$", "", t).strip()
-    return t
+    t = (text or "").strip()
+    if t.startswith("```"):
+        t = re.sub(r"^```(?:json)?\s*", "", t, flags=re.IGNORECASE)
+        t = re.sub(r"\s*```$", "", t)
+    return t.strip()
 
 def generate(prompt: str) -> dict:
     """
-    Generates content and guarantees JSON parsing
+    SAFE generator:
+    - Never crashes the server
+    - Always returns JSON
     """
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-    cleaned = strip_code_fences(response.text or "")
-
     try:
-        return json.loads(cleaned)
-    except Exception:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        text = response.text
+        if not text:
+            return {"error": "Empty response from model"}
+
+        cleaned = strip_code_fences(text)
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            return {
+                "error": "Model returned invalid JSON",
+                "raw": cleaned
+            }
+
+    except Exception as e:
         return {
-            "error": "Model returned invalid JSON",
-            "raw": cleaned
+            "error": "Model generation failed",
+            "details": str(e)
         }
 
-# ============================
-# Prompts (STRICT & CLEAN)
-# ============================
+# =========================
+# Prompts
+# =========================
 SYSTEM_RULES = """
-أنت مدرس حقيقي لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
+أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
 
-التعليمات:
-- اشرح بالعربية الفصحى المبسطة.
-- اذكر المصطلحات التقنية بالإنجليزية بين قوسين عند أول ظهور فقط.
-- التزم بالتوبك المحدد ولا تخرج عنه.
-- الشرح يجب أن يكون طبيعي وكأنه من معلم.
-- ممنوع ذكر AI أو prompts أو ملفات أو أنظمة داخلية أو مصادر.
+القواعد:
+- الشرح بالعربية الفصحى المبسطة.
+- اذكر المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر.
+- التزم بالتوبك الحالي فقط.
+- الشرح يكون طبيعي ومفتوح مثل شرح المعلم.
+- ممنوع ذكر AI أو prompts أو أنظمة داخلية أو مصادر.
 """
 
 LESSON_SCHEMA = """
-أخرج JSON فقط بالشكل التالي:
+أخرج JSON فقط:
 {
-  "site_greeting": "نص ترحيبي قصير باسم Askora",
-  "title": "عنوان الدرس",
-  "overview": "شرح مفتوح ومفصل",
-  "key_terms": [
-    {"term_ar":"","term_en":"","definition_ar":""}
-  ],
-  "example": {
-    "description_ar":"",
-    "code":"",
-    "explain_ar":""
-  },
-  "out_of_scope_notice": "جملة قصيرة"
+  "site_greeting": "",
+  "title": "",
+  "overview": "",
+  "key_terms": [{"term_ar":"","term_en":"","definition_ar":""}],
+  "example": {"description_ar":"","code":"","explain_ar":""},
+  "out_of_scope_notice": ""
 }
 """
 
@@ -147,9 +151,9 @@ REJECT_TEXT = (
     "افتح درسًا مناسبًا أو اسأل ضمن موضوع الصفحة الحالية."
 )
 
-# ============================
+# =========================
 # API Models
-# ============================
+# =========================
 class TopicRequest(BaseModel):
     topic: str
 
@@ -157,14 +161,14 @@ class ChatRequest(BaseModel):
     topic: str
     message: str
 
-# ============================
+# =========================
 # Endpoints
-# ============================
+# =========================
 @app.get("/")
 def root():
     return {
         "message": "Askora AI Service is running",
-        "topics_supported": list(TOPIC_NAME_MAP.keys())
+        "available_topics": list(TOPIC_NAME_MAP.keys())
     }
 
 @app.get("/health")
@@ -176,7 +180,10 @@ def health():
 def lesson(req: TopicRequest):
     context = load_topic_context(req.topic)
     if not context:
-        return {"error": "Topic not found", "expected_topics": list(TOPIC_NAME_MAP.keys())}
+        return {
+            "error": "Topic not found",
+            "expected_topics": list(TOPIC_NAME_MAP.keys())
+        }
 
     prompt = f"""
 {SYSTEM_RULES}
@@ -187,7 +194,7 @@ def lesson(req: TopicRequest):
 {context}
 \"\"\"
 
-اشرح التوبك شرحًا عامًا ومتكاملًا بدون أي أسئلة أو كويز.
+اشرح التوبك شرحًا عامًا ومتكاملًا بدون أسئلة أو كويز.
 """
     return generate(prompt)
 
@@ -196,7 +203,10 @@ def lesson(req: TopicRequest):
 def practice(req: TopicRequest):
     context = load_topic_context(req.topic)
     if not context:
-        return {"error": "Topic not found"}
+        return {
+            "error": "Topic not found",
+            "expected_topics": list(TOPIC_NAME_MAP.keys())
+        }
 
     prompt = f"""
 {SYSTEM_RULES}
@@ -207,7 +217,7 @@ def practice(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ سؤال تدريب واحد فقط مناسب للمبتدئين.
+أنشئ سؤال تدريب واحد مناسب للمبتدئين.
 """
     return generate(prompt)
 
@@ -216,7 +226,10 @@ def practice(req: TopicRequest):
 def quiz(req: TopicRequest):
     context = load_topic_context(req.topic)
     if not context:
-        return {"error": "Topic not found"}
+        return {
+            "error": "Topic not found",
+            "expected_topics": list(TOPIC_NAME_MAP.keys())
+        }
 
     prompt = f"""
 {SYSTEM_RULES}
@@ -227,10 +240,13 @@ def quiz(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ سؤال اختيار من متعدد واحد فقط.
+أنشئ سؤال اختيار من متعدد واحد.
 """
     data = generate(prompt)
-    data["grading_rule"] = "correct = 100%, wrong = 0%"
+
+    if "error" not in data:
+        data["grading_rule"] = "Correct = 100%, Wrong = 0%"
+
     return data
 
 # ---------- CHAT ----------
@@ -258,7 +274,6 @@ def chat(req: ChatRequest):
 {req.message}
 \"\"\"
 
-إذا السؤال مرتبط بالتوبك أجب.
-إذا غير مرتبط استخدم نص الرفض حرفيًا.
+إذا السؤال مرتبط بالتوبك أجب، وإذا غير مرتبط استخدم نص الرفض حرفيًا.
 """
     return generate(prompt)

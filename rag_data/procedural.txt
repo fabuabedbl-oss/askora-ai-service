@@ -1,29 +1,9 @@
-Generate a comprehensive educational lesson for Askora students (BTEC IT - Jordan).
+البرمجة الإجرائية (Procedural Programming) هي نمط برمجي يعتمد على تقسيم البرنامج إلى مجموعة من الدوال أو الإجراءات التي يتم تنفيذها بشكل تسلسلي.
 
-Language:
-- Arabic (primary).
-- Mention English technical terms in parentheses عند أول ذكر فقط.
+في هذا النمط، يتم التركيز على الخطوات التي يجب تنفيذها للوصول إلى النتيجة، حيث تستدعي الدالة الرئيسية دوال أصغر.
 
-Audience:
-- Beginner by default.
+تُستخدم المتغيرات المحلية داخل الدوال، بينما يمكن استخدام المتغيرات العامة لمشاركة القيم بين عدة دوال.
 
-Important rules:
-- Do NOT mention AI, prompts, files, datasets, RAG, or internal systems.
-- The explanation should feel like a normal programming lesson.
+تمر النتائج من الدوال الصغيرة إلى الدالة الرئيسية عبر قيمة الإرجاع (Return) حتى تتكون النتيجة النهائية.
 
-Topic:
-Procedural Programming
-
-Guidelines for explanation:
-- اشرح مفهوم البرمجة الإجرائية وفكرة التنفيذ المتسلسل.
-- وضّح دور الدوال والإجراءات.
-- تحدث عن المتغيرات المحلية والعامة.
-- اشرح كيف تنتقل النتائج من الدوال الصغيرة إلى الدالة الرئيسية.
-- ناقش المميزات والعيوب بأسندة منطقية.
-- استخدم مثال Python بسيط يوضح functions و variables.
-
-Output format (Askora lesson JSON):
-- overview: شرح مفتوح ومفصل.
-- key_terms: مصطلحات أساسية.
-- example: Python code + شرح.
-- out_of_scope_notice: جملة قصيرة.
+يمتاز هذا النمط بالبساطة وسهولة الفهم للمبتدئين، لكنه يصبح صعب التوسعة والصيانة عندما يكبر حجم المشروع.

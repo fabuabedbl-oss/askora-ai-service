@@ -1,30 +1,15 @@
-Generate a comprehensive educational lesson for Askora students (BTEC IT - Jordan).
+البرمجة كائنية التوجه (Object-Oriented Programming) هي نمط برمجي يعتمد على تمثيل عناصر البرنامج على شكل كائنات تجمع بين البيانات والسلوك.
 
-Language:
-- Arabic (primary).
-- Mention English technical terms in parentheses عند أول ذكر فقط.
+الصنف (Class) هو قالب يُستخدم لإنشاء الكائنات، بينما الكائن (Object) هو نسخة من هذا الصنف.
 
-Audience:
-- Beginner by default.
+يعتمد هذا النمط على عدة مفاهيم أساسية مثل:
+التجريد (Abstraction) لإخفاء التفاصيل غير المهمة،
+التغليف (Encapsulation) لحماية البيانات،
+الوراثة (Inheritance) لإعادة استخدام الكود،
+وتعدد الأشكال (Polymorphism) لتغيير السلوك حسب النوع.
 
-Important rules:
-- Do NOT mention AI, prompts, files, datasets, RAG, or internal systems.
-- The lesson should feel natural and educational.
+يتم توزيع المهام داخل النظام على عدة كائنات بدل تجميع كل الوظائف في مكان واحد، مما يسهل تنظيم المشروع.
 
-Topic:
-Object-Oriented Programming (OOP)
+تمر النتائج عبر استدعاءات بين عدة دوال وكائنات حتى يتم الوصول إلى النتيجة النهائية.
 
-Guidelines for explanation:
-- اشرح فكرة البرمجة الكائنية ولماذا ظهرت.
-- وضّح مفهوم الكائنات (Objects) والأصناف (Classes).
-- تحدث عن التجريد، التغليف، الوراثة، وتعدد الأشكال بأسلوب مبسط.
-- اشرح كيف يتم توزيع المهام داخل النظام باستخدام عدة كائنات.
-- وضّح كيف تنتقل النتيجة عبر استدعاء الدوال بين الكائنات.
-- ناقش المميزات والعيوب بشكل واقعي.
-- استخدم مثال Python بسيط يوضح class و object.
-
-Output format (Askora lesson JSON):
-- overview: شرح مفتوح ومفصل.
-- key_terms: مصطلحات أساسية.
-- example: Python code + شرح.
-- out_of_scope_notice: جملة قصيرة.
+يساعد هذا النمط في بناء أنظمة كبيرة ومنظمة، لكنه يتطلب فهمًا أعمق مقارنة بالأنماط الأخرى.

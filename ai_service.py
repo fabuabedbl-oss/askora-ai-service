@@ -6,20 +6,22 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
-# ----------------------------
-# ENV
-# ----------------------------
+# ============================
+# Environment
+# ============================
 load_dotenv()
+
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing API key")
 
 client = genai.Client(api_key=API_KEY)
+
 app = FastAPI(title="Askora AI Service", version="1.0.0")
 
-# ----------------------------
-# TOPIC MAPPING
-# ----------------------------
+# ============================
+# Topic Mapping (Frontend → RAG)
+# ============================
 TOPIC_MAP = {
     "Event-Driven Programming": "event_driven",
     "Object-Oriented Programming (OOP)": "oop",
@@ -37,45 +39,44 @@ def load_context(topic: str) -> str:
     if not key:
         return ""
     path = TOPIC_FILES.get(key)
-    if not os.path.exists(path):
+    if not path or not os.path.exists(path):
         return ""
-    return open(path, "r", encoding="utf-8").read()
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read().strip()
 
-# ----------------------------
-# HELPERS
-# ----------------------------
-def clean_json(text: str):
+# ============================
+# Helpers
+# ============================
+def clean_json(text: str) -> dict:
     text = text.strip()
-    text = re.sub(r"^```json|```$", "", text)
+    text = re.sub(r"^```json|```$", "", text).strip()
     return json.loads(text)
 
-def generate(prompt: str):
-    try:
-        res = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
-        )
-        return res.text
-    except Exception as e:
-        raise HTTPException(500, str(e))
+def generate(prompt: str) -> str:
+    response = client.models.generate_content(
+        model="gemini-1.0-pro",   # ✅ WORKING FREE MODEL
+        contents=prompt
+    )
+    return response.text or ""
 
-# ----------------------------
-# SCHEMAS
-# ----------------------------
+# ============================
+# Prompts
+# ============================
 SYSTEM_RULES = """
-أنت مدرس يشرح لطلاب BTEC IT في الأردن.
+أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
 اشرح بالعربية الفصحى المبسطة.
-اذكر المصطلحات الإنجليزية عند أول ذكر فقط.
-لا تذكر أي أنظمة داخلية أو مصادر.
+اذكر المصطلح الإنجليزي بين قوسين عند أول ذكر فقط.
+ممنوع ذكر AI أو prompts أو ملفات أو مصادر.
 """
 
 LESSON_SCHEMA = """
 أخرج JSON فقط:
 {
+  "site_greeting": "",
   "title": "",
   "overview": "",
   "key_terms": [{"term_ar":"","term_en":"","definition_ar":""}],
-  "example": {"code":"","explain_ar":""},
+  "example": {"description_ar":"","code":"","explain_ar":""},
   "out_of_scope_notice": ""
 }
 """
@@ -110,9 +111,9 @@ CHAT_SCHEMA = """
 
 REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora."
 
-# ----------------------------
-# MODELS
-# ----------------------------
+# ============================
+# Models
+# ============================
 class TopicRequest(BaseModel):
     topic: str
 
@@ -120,9 +121,9 @@ class ChatRequest(BaseModel):
     topic: str
     message: str
 
-# ----------------------------
-# ENDPOINTS
-# ----------------------------
+# ============================
+# Endpoints
+# ============================
 @app.post("/lesson")
 def lesson(req: TopicRequest):
     context = load_context(req.topic)
@@ -138,10 +139,9 @@ def lesson(req: TopicRequest):
 {context}
 \"\"\"
 
-اشرح الموضوع شرحًا تعليميًا متكاملًا.
+اشرح الدرس شرحًا تعليميًا طبيعيًا وكاملًا.
 """
     return clean_json(generate(prompt))
-
 
 @app.post("/practice")
 def practice(req: TopicRequest):
@@ -162,7 +162,6 @@ def practice(req: TopicRequest):
 """
     return clean_json(generate(prompt))
 
-
 @app.post("/quiz")
 def quiz(req: TopicRequest):
     context = load_context(req.topic)
@@ -181,7 +180,6 @@ def quiz(req: TopicRequest):
 أنشئ سؤال اختيار من متعدد واحد.
 """
     return clean_json(generate(prompt))
-
 
 @app.post("/chat")
 def chat(req: ChatRequest):

@@ -1,31 +1,71 @@
+You are an educational content generator for Askora.
+Generate a COMPLETE structured lesson for the topic below.
+The response MUST cover ALL required points, and you MAY add extra helpful explanations/examples as long as they stay within this topic.
+
 Topic: Event-Driven Programming
 
-التعريف:
-البرمجة المعتمدة على الأحداث (Event-Driven Programming) هي نمط برمجي يعتمد على تنفيذ الأوامر استجابةً لحدث (Event) يحدث داخل النظام مثل ضغط زر، إدخال المستخدم، أو رسالة من النظام.
+Language:
+- Arabic (primary)
+- English terms between parentheses when first mentioned
 
-العناصر الأساسية (Core Elements):
-- الحدث (Event): فعل/تغيّر يحدث في النظام.
-- مستمع الحدث (Event Listener): جزء يراقب حدوث الحدث.
-- معالج الحدث (Event Handler): دالة/كود يتم تنفيذه عند وقوع الحدث.
-- حلقة الأحداث (Event Loop): آلية تُدير استقبال الأحداث وإرسالها للـHandler المناسب.
+Audience:
+- Beginner IT students (BTEC level)
 
-ملاحظات مهمة:
-- هذا النمط شائع في البرامج التفاعلية وواجهات المستخدم الرسومية (GUI).
-- تسلسل التنفيذ قد يكون غير خطّي لأن التنفيذ يعتمد على الأحداث.
+==============================
+REQUIRED CONTENT (MUST COVER)
+==============================
 
-المميزات (Advantages):
-- يجعل البرنامج تفاعليًا وسهل الإضافة/التوسعة عبر أحداث جديدة.
-- مناسب لسيناريوهات “استجابة للمستخدم” (User Interaction).
+1) Title
+- عنوان واضح بالعربية.
 
-العيوب (Disadvantages):
-- قد يتأثر الأداء بموارد النظام (System resources).
-- صعوبة تتبع تدفق البرنامج (Program flow) أحيانًا.
+2) Overview (5–8 lines)
+- تعريف واضح لـ Event-Driven Programming.
+- وضّح أن التنفيذ يعتمد على الأحداث وقد يكون غير خطّي (Not linear).
+- اذكر أمثلة استخدام شائعة: GUI, interactive systems.
 
-أهداف التعلم (Learning Objectives):
-(A) فهم النماذج البرمجية المختلفة ومزاياها وعيوبها.
-(B) تطوير واختبار حلول برمجية.
-(C) مراجعة الحلول وفق معايير مثل سهولة الاستخدام والتنقل والجودة والأداء.
+3) Core Elements (شرح واضح لكل عنصر)
+- Event (الحدث)
+- Event Listener (مستمع الحدث)
+- Event Handler (معالج الحدث)
+- Event Loop (حلقة الأحداث)
+- Event processing and listening tools (أدوات الاستماع والمعالجة للأحداث)
+  * اشرحها كمفهوم عام (مثل: نظام يلتقط الأحداث/يسجلها/يوجهها)، بدون ذكر frameworks محددة.
 
-خارج النطاق (Out of Scope):
-- تفاصيل Frameworks (مثل React/Angular أو مكتبات GUI المتقدمة).
-- البرمجة غير المتزامنة المتقدمة (Advanced Async).
+4) “Results processed from bottom to top”
+- اشرح هذه الفكرة ببساطة لطلاب مبتدئين:
+  * مثال توضيحي: المستخدم يعمل حدث (ضغط زر) -> النظام يلتقط الحدث -> يمرره لمعالج -> يظهر الناتج للمستخدم.
+  * ركّز أنها “سلسلة استجابة” تبدأ من الحدث وتنتهي بالنتيجة الظاهرة.
+
+5) Advantages (اشرح كل نقطة بجملة-جملتين)
+- Easy to learn
+- Easily extendable with additional functions through events
+- Logical sequence from start to end (اشرحها كـ “تدفّق استجابة واضح: حدث -> معالجة -> نتيجة”)
+
+6) Disadvantages (اشرح كل نقطة بجملة-جملتين)
+- Affected by system resources
+- Performance limitations
+- Difficult to maintain logical program flow
+
+7) Example
+- كود بسيط (Python) يوضح: event + listener/handler + loop.
+- شرح كيف يحقق العناصر الأساسية.
+
+8) Practice
+- سؤال تدريبي قصير + جواب صحيح + hint.
+
+9) Quiz
+- سؤال اختيار من متعدد (4 خيارات) + correct_index + تفسير الإجابة.
+
+10) Learning Objectives
+- اربط الدرس بشكل صريح مع:
+  (A) Understanding programming models + pros/cons
+  (B) Developing and testing solutions
+  (C) Reviewing solutions: usability, ease of navigation, quality, performance
+
+11) Out of Scope Notice
+- اذكر بوضوح ما لن يتم تغطيته:
+  advanced frameworks, advanced async details.
+
+IMPORTANT RULES:
+- Do NOT mention AI, prompts, files, datasets, or internal sources.
+- Content must feel like a normal curriculum explanation.

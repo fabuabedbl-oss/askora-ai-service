@@ -1,26 +1,34 @@
+Generate a COMPLETE lesson for Askora students (BTEC IT - Jordan).
+Language: Arabic (primary). Put English technical terms in parentheses at first mention.
+Audience: beginner-default (مبدئي افتراضيًا).
+Do NOT mention AI, prompts, files, RAG, datasets, or sources.
+
 Topic: Procedural Programming
 
-التعريف:
-البرمجة الإجرائية (Procedural Programming) هي نمط برمجي يعتمد على تقسيم البرنامج إلى إجراءات/دوال (Procedures/Functions) تُنفذ بتسلسل واضح غالبًا من الأعلى إلى الأسفل.
+MUST COVER ALL THESE POINTS (do not skip any):
+1) تعريف واضح للـ Procedural Programming.
+2) Core Elements + شرح لكل عنصر:
+   - Procedures (الإجراءات)
+   - Functions (الدوال)
+   - Predefined functions (الدوال الجاهزة)
+   - Local variables (متغيرات محلية)
+   - Global variables (متغيرات عامة)
+3) Results processed from bottom to top:
+   - فسرها كـ “الدالة الرئيسية تستدعي دوال أصغر، وكل دالة ترجع نتيجة للأعلى (return) حتى تتجمع النتيجة النهائية”.
+4) Advantages:
+   - Easier than OOP
+   - Requires less memory compared to event-driven programming
+5) Disadvantages:
+   - Harder to expand
+   - Harder to maintain code
 
-العناصر الأساسية (Core Elements):
-- الإجراءات/الدوال (Procedures/Functions)
-- المتغيرات المحلية والعامة (Local/Global Variables)
-- الدوال الجاهزة (Predefined Functions)
+Output requirements (match Askora JSON schema):
+- overview: 5-8 أسطر
+- key_terms: 4-6 مصطلحات
+- example: Python code فقط (functions + توضيح local/global بسيط)
+- practice: سؤال + جواب + hint
+- quiz: MCQ 4 choices + correct_index + explain_ar
+- out_of_scope_notice: جملة قصيرة
 
-المميزات (Advantages):
-- أسهل من OOP للمبتدئين.
-- غالبًا تحتاج ذاكرة أقل من بعض الأنماط التفاعلية.
-
-العيوب (Disadvantages):
-- أصعب في التوسعة عندما يكبر المشروع.
-- صيانة الكود قد تصبح أصعب مع الوقت.
-
-أهداف التعلم (Learning Objectives):
-(A) فهم النماذج البرمجية المختلفة ومزاياها وعيوبها.
-(B) تطوير واختبار حلول برمجية.
-(C) مراجعة الحلول وفق معايير مثل سهولة الاستخدام والتنقل والجودة والأداء.
-
-خارج النطاق (Out of Scope):
-- مفاهيم OOP المتقدمة.
-- أنظمة Events المتقدمة.
+Extra:
+- You MAY add helpful explanations/examples as long as they remain within the topic and help students understand.

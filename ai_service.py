@@ -1,103 +1,79 @@
 import os
 import json
 import re
-from typing import Dict
-
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
-# ============================
-# Environment & App
-# ============================
+# ----------------------------
+# Environment
+# ----------------------------
 load_dotenv()
-
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise RuntimeError("Missing API key")
 
 client = genai.Client(api_key=API_KEY)
+app = FastAPI(title="Askora AI Service", version="1.4.0")
 
-app = FastAPI(
-    title="Askora AI Service",
-    version="1.3.1",
-    description="AI educational service for BTEC IT students"
-)
-
-# ============================
-# Topic Mapping (IMPORTANT)
-# ============================
-TOPIC_NAME_MAP: Dict[str, str] = {
+# ----------------------------
+# Topic mapping
+# ----------------------------
+TOPIC_MAP = {
     "Event-Driven Programming": "event_driven",
     "Object-Oriented Programming (OOP)": "oop",
-    "Procedural Programming": "procedural",
+    "Procedural Programming": "procedural"
 }
 
-TOPIC_TO_FILE = {
+TOPIC_FILES = {
     "event_driven": "rag_data/event_driven.txt",
     "oop": "rag_data/oop.txt",
-    "procedural": "rag_data/procedural.txt",
+    "procedural": "rag_data/procedural.txt"
 }
 
-def load_topic_context(topic_name: str) -> str:
-    internal = TOPIC_NAME_MAP.get(topic_name)
-    if not internal:
+def load_context(topic: str) -> str:
+    key = TOPIC_MAP.get(topic)
+    if not key:
         return ""
-    path = TOPIC_TO_FILE.get(internal)
+    path = TOPIC_FILES.get(key)
     if not path or not os.path.exists(path):
         return ""
     with open(path, "r", encoding="utf-8") as f:
-        return f.read().strip()
+        return f.read()
 
-# ============================
+# ----------------------------
 # Helpers
-# ============================
-def strip_code_fences(text: str) -> str:
-    t = (text or "").strip()
-    if t.startswith("```"):
-        t = re.sub(r"^```(?:json)?\s*", "", t, flags=re.IGNORECASE)
-        t = re.sub(r"\s*```$", "", t)
-    return t.strip()
+# ----------------------------
+def clean_json(text: str) -> dict:
+    text = text.strip()
+    text = re.sub(r"^```json|```$", "", text).strip()
+    return json.loads(text)
 
-def safe_generate(prompt: str) -> str:
-    """
-    Wrapper to handle Gemini errors safely (quota, overload, etc.)
-    """
-    try:
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",  # ✅ safer for free tier
-            contents=prompt
-        )
-        return response.text or ""
-    except Exception as e:
-        return json.dumps({
-            "error": "Model generation failed",
-            "details": str(e)
-        })
+def generate(prompt: str) -> str:
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+    return response.text or ""
 
-# ============================
-# Prompts (GLOBAL)
-# ============================
-SYSTEM_RULES = """
-أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
-
-التعليمات:
-- اشرح بالعربية الفصحى المبسطة.
-- ضع المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر.
-- التزم بالتوبك الحالي فقط.
-- مسموح التوسع في الشرح وإضافة أمثلة تعليمية.
-- ممنوع ذكر AI أو prompts أو ملفات أو أنظمة داخلية.
-"""
-
+# ----------------------------
+# Schemas
+# ----------------------------
 LESSON_SCHEMA = """
 أخرج JSON فقط بالشكل التالي:
 {
   "site_greeting": "",
   "title": "",
   "overview": "",
-  "key_terms": [{"term_ar":"","term_en":"","definition_ar":""}],
-  "example": {"description_ar":"","code":"","explain_ar":""},
+  "key_terms": [
+    {"term_ar":"","term_en":"","definition_ar":""}
+  ],
+  "example": {
+    "description_ar":"",
+    "code":"",
+    "explain_ar":""
+  },
   "out_of_scope_notice": ""
 }
 """
@@ -130,11 +106,18 @@ CHAT_SCHEMA = """
 }
 """
 
-REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora. افتح درسًا مناسبًا أو اسأل ضمن موضوع الصفحة الحالية."
+SYSTEM_RULES = """
+أنت مدرس جامعي يشرح لطلاب BTEC IT في الأردن.
+اشرح بالعربية الفصحى المبسطة.
+اذكر المصطلح الإنجليزي بين قوسين عند أول ذكر فقط.
+ممنوع ذكر AI أو prompts أو ملفات.
+"""
 
-# ============================
-# API Models
-# ============================
+REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora."
+
+# ----------------------------
+# Models
+# ----------------------------
 class TopicRequest(BaseModel):
     topic: str
 
@@ -142,86 +125,69 @@ class ChatRequest(BaseModel):
     topic: str
     message: str
 
-# ============================
+# ----------------------------
 # Endpoints
-# ============================
-@app.get("/")
-def root():
-    return {"message": "Askora AI Service is running. Visit /docs"}
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-# -------- LESSON --------
+# ----------------------------
 @app.post("/lesson")
 def lesson(req: TopicRequest):
-    context = load_topic_context(req.topic)
+    context = load_context(req.topic)
     if not context:
-        return {"error": "Topic not found"}
+        raise HTTPException(404, "Topic not found")
 
     prompt = f"""
 {SYSTEM_RULES}
 {LESSON_SCHEMA}
 
-السياق:
+المحتوى:
 \"\"\"
 {context}
 \"\"\"
 
-اشرح التوبك شرحًا تعليميًا عامًا ومتكاملًا بدون أسئلة أو كويز.
+اشرح الدرس شرحًا تعليميًا متكاملًا.
 """
-    raw = safe_generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return clean_json(generate(prompt))
 
-# -------- PRACTICE --------
 @app.post("/practice")
 def practice(req: TopicRequest):
-    context = load_topic_context(req.topic)
+    context = load_context(req.topic)
     if not context:
-        return {"error": "Topic not found"}
+        raise HTTPException(404, "Topic not found")
 
     prompt = f"""
 {SYSTEM_RULES}
 {PRACTICE_SCHEMA}
 
-السياق:
+اعتمادًا على هذا المحتوى:
 \"\"\"
 {context}
 \"\"\"
 
-أنشئ سؤال تدريب واحد مناسب للمبتدئين.
+أنشئ سؤال تدريب واحد.
 """
-    raw = safe_generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return clean_json(generate(prompt))
 
-# -------- QUIZ --------
 @app.post("/quiz")
 def quiz(req: TopicRequest):
-    context = load_topic_context(req.topic)
+    context = load_context(req.topic)
     if not context:
-        return {"error": "Topic not found"}
+        raise HTTPException(404, "Topic not found")
 
     prompt = f"""
 {SYSTEM_RULES}
 {QUIZ_SCHEMA}
 
-السياق:
+اعتمادًا على هذا المحتوى:
 \"\"\"
 {context}
 \"\"\"
 
-أنشئ سؤال اختيار من متعدد واحد.
+أنشئ سؤال اختيار من متعدد.
 """
-    raw = safe_generate(prompt)
-    data = json.loads(strip_code_fences(raw))
-    data["grading_rule"] = "Correct answer = 100%, wrong = 0%"
-    return data
+    return clean_json(generate(prompt))
 
-# -------- CHAT --------
 @app.post("/chat")
 def chat(req: ChatRequest):
-    context = load_topic_context(req.topic)
+    context = load_context(req.topic)
     if not context:
         return {
             "scope": "OUT_OF_SCOPE",
@@ -233,7 +199,7 @@ def chat(req: ChatRequest):
 {SYSTEM_RULES}
 {CHAT_SCHEMA}
 
-السياق:
+المحتوى:
 \"\"\"
 {context}
 \"\"\"
@@ -242,8 +208,5 @@ def chat(req: ChatRequest):
 \"\"\"
 {req.message}
 \"\"\"
-
-إذا السؤال مرتبط بالتوبك أجب، وإذا لا استخدم نص الرفض حرفيًا.
 """
-    raw = safe_generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return clean_json(generate(prompt))

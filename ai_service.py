@@ -19,7 +19,7 @@ client = genai.Client(api_key=API_KEY)
 
 app = FastAPI(
     title="Askora AI Service",
-    version="1.5.0",
+    version="1.5.1",
     description="AI-powered educational backend for Askora (BTEC IT - Jordan)"
 )
 
@@ -55,20 +55,33 @@ def clean_json(text: str) -> dict:
     """
     Removes markdown fences and parses JSON safely
     """
+    if not text:
+        raise ValueError("Empty model response")
+
     text = text.strip()
     text = re.sub(r"^```(?:json)?", "", text)
     text = re.sub(r"```$", "", text)
-    return json.loads(text.strip())
+
+    try:
+        return json.loads(text.strip())
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON returned:\n{text}")
 
 def generate(prompt: str) -> str:
     """
-    Calls Gemini API using a SUPPORTED FREE-TIER model
+    Calls Gemini API using a STABLE FREE-TIER model
     """
-    response = client.models.generate_content(
-        model="gemini-1.5-pro",  # ✅ CORRECT MODEL
-        contents=prompt
-    )
-    return response.text or ""
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.0-pro",  # ✅ ONLY SAFE MODEL FOR FREE TIER
+            contents=prompt
+        )
+        return response.text or ""
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Model generation failed: {str(e)}"
+        )
 
 # =========================
 # Prompt rules & schemas

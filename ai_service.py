@@ -15,14 +15,14 @@ load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
-    raise RuntimeError("Missing API key. Put GEMINI_API_KEY (or GOOGLE_API_KEY) in .env")
+    raise RuntimeError("Missing API key")
 
 client = genai.Client(api_key=API_KEY)
 
-app = FastAPI(title="Askora AI Service", version="1.1.0")
+app = FastAPI(title="Askora AI Service", version="1.2.0")
 
 # ----------------------------
-# Topic mapping (IMPORTANT)
+# Topic mapping (for backend)
 # ----------------------------
 TOPIC_NAME_MAP = {
     "Event-Driven Programming": "event_driven",
@@ -67,18 +67,15 @@ def generate(prompt: str) -> str:
 # Prompts
 # ----------------------------
 SYSTEM_RULES = """
-أنت مساعد تعليمي لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
-
-القواعد:
-1) الشرح بالعربية الفصحى المبسطة (مبدئي افتراضيًا).
-2) ضع المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر.
-3) التزم بالتوبك الحالي فقط.
-4) مسموح إضافة شروحات مفيدة ضمن نفس التوبك.
-5) ممنوع ذكر AI أو prompts أو ملفات أو مصادر.
+أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
+اشرح بالعربية الفصحى المبسطة.
+ضع المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر.
+التزم بالتوبك الحالي فقط.
+ممنوع ذكر AI أو مصادر أو أنظمة داخلية.
 """
 
 LESSON_SCHEMA = """
-أخرج JSON فقط بالشكل التالي:
+أخرج JSON فقط:
 {
   "site_greeting": "",
   "title": "",
@@ -136,11 +133,6 @@ class ChatRequest(BaseModel):
 def root():
     return {"message": "Askora AI Service is running. Visit /docs"}
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-# -------- LESSON --------
 @app.post("/lesson")
 def lesson(req: TopicRequest):
     context = load_topic_context(req.topic)
@@ -156,12 +148,10 @@ def lesson(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ شرح درس فقط بدون أسئلة أو كويز.
+اشرح التوبك شرحًا عامًا ومتكاملًا بدون أسئلة أو كويز.
 """
-    raw = generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return json.loads(strip_code_fences(generate(prompt)))
 
-# -------- PRACTICE --------
 @app.post("/practice")
 def practice(req: TopicRequest):
     context = load_topic_context(req.topic)
@@ -177,12 +167,10 @@ def practice(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ سؤال تدريب واحد فقط.
+أنشئ سؤال تدريب واحد مناسب للمبتدئين.
 """
-    raw = generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return json.loads(strip_code_fences(generate(prompt)))
 
-# -------- QUIZ --------
 @app.post("/quiz")
 def quiz(req: TopicRequest):
     context = load_topic_context(req.topic)
@@ -198,16 +186,12 @@ def quiz(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ سؤال اختيار من متعدد.
+أنشئ سؤال اختيار من متعدد واحد.
 """
-    raw = generate(prompt)
-    quiz_data = json.loads(strip_code_fences(raw))
+    data = json.loads(strip_code_fences(generate(prompt)))
+    data["grading_note"] = "Correct answer = 100%, wrong = 0%"
+    return data
 
-    # grade placeholder (for backend use later)
-    quiz_data["grade_rule"] = "1 correct = 100%, else 0%"
-    return quiz_data
-
-# -------- CHAT --------
 @app.post("/chat")
 def chat(req: ChatRequest):
     context = load_topic_context(req.topic)
@@ -228,7 +212,6 @@ def chat(req: ChatRequest):
 {req.message}
 \"\"\"
 
-إذا السؤال مرتبط أجب، إذا لا استخدم نص الرفض حرفيًا.
+إذا السؤال مرتبط أجبীৱ، وإذا لا استخدم نص الرفض حرفيًا.
 """
-    raw = generate(prompt)
-    return json.loads(strip_code_fences(raw))
+    return json.loads(strip_code_fences(generate(prompt)))

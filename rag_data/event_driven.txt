@@ -1,71 +1,32 @@
-You are an educational content generator for Askora.
-Generate a COMPLETE structured lesson for the topic below.
-The response MUST cover ALL required points, and you MAY add extra helpful explanations/examples as long as they stay within this topic.
-
-Topic: Event-Driven Programming
+Generate a comprehensive educational lesson for Askora students (BTEC IT - Jordan).
 
 Language:
-- Arabic (primary)
-- English terms between parentheses when first mentioned
+- Arabic (primary).
+- Mention English technical terms in parentheses عند أول ذكر فقط.
 
 Audience:
-- Beginner IT students (BTEC level)
+- Beginner by default، بأسلوب تعليمي سلس ومفهوم.
 
-==============================
-REQUIRED CONTENT (MUST COVER)
-==============================
+Important rules:
+- Do NOT mention AI, prompts, files, datasets, RAG, or internal systems.
+- The explanation should feel like a normal lesson written by a teacher.
 
-1) Title
-- عنوان واضح بالعربية.
+Topic:
+Event-Driven Programming
 
-2) Overview (5–8 lines)
-- تعريف واضح لـ Event-Driven Programming.
-- وضّح أن التنفيذ يعتمد على الأحداث وقد يكون غير خطّي (Not linear).
-- اذكر أمثلة استخدام شائعة: GUI, interactive systems.
+Guidelines for explanation:
+- اشرح ما هي البرمجة المعتمدة على الأحداث ولماذا نستخدمها.
+- اشرح فكرة التفاعل مع المستخدم وكيف ينتظر النظام حدوث حدث معين.
+- تحدث عن المفاهيم الأساسية مثل:
+  Event، Event Listener، Event Handler، Event Loop
+  بأسلوب سردي طبيعي وليس كقائمة للحفظ.
+- وضّح كيف تنتقل النتيجة من حدوث الحدث حتى تظهر للمستخدم (سلسلة الاستجابة).
+- ناقش المميزات والعيوب بطريقة منطقية يفهمها الطالب.
+- اربط الشرح بأمثلة من البرامج اليومية.
+- استخدم مثال Python بسيط يوضح الفكرة.
 
-3) Core Elements (شرح واضح لكل عنصر)
-- Event (الحدث)
-- Event Listener (مستمع الحدث)
-- Event Handler (معالج الحدث)
-- Event Loop (حلقة الأحداث)
-- Event processing and listening tools (أدوات الاستماع والمعالجة للأحداث)
-  * اشرحها كمفهوم عام (مثل: نظام يلتقط الأحداث/يسجلها/يوجهها)، بدون ذكر frameworks محددة.
-
-4) “Results processed from bottom to top”
-- اشرح هذه الفكرة ببساطة لطلاب مبتدئين:
-  * مثال توضيحي: المستخدم يعمل حدث (ضغط زر) -> النظام يلتقط الحدث -> يمرره لمعالج -> يظهر الناتج للمستخدم.
-  * ركّز أنها “سلسلة استجابة” تبدأ من الحدث وتنتهي بالنتيجة الظاهرة.
-
-5) Advantages (اشرح كل نقطة بجملة-جملتين)
-- Easy to learn
-- Easily extendable with additional functions through events
-- Logical sequence from start to end (اشرحها كـ “تدفّق استجابة واضح: حدث -> معالجة -> نتيجة”)
-
-6) Disadvantages (اشرح كل نقطة بجملة-جملتين)
-- Affected by system resources
-- Performance limitations
-- Difficult to maintain logical program flow
-
-7) Example
-- كود بسيط (Python) يوضح: event + listener/handler + loop.
-- شرح كيف يحقق العناصر الأساسية.
-
-8) Practice
-- سؤال تدريبي قصير + جواب صحيح + hint.
-
-9) Quiz
-- سؤال اختيار من متعدد (4 خيارات) + correct_index + تفسير الإجابة.
-
-10) Learning Objectives
-- اربط الدرس بشكل صريح مع:
-  (A) Understanding programming models + pros/cons
-  (B) Developing and testing solutions
-  (C) Reviewing solutions: usability, ease of navigation, quality, performance
-
-11) Out of Scope Notice
-- اذكر بوضوح ما لن يتم تغطيته:
-  advanced frameworks, advanced async details.
-
-IMPORTANT RULES:
-- Do NOT mention AI, prompts, files, datasets, or internal sources.
-- Content must feel like a normal curriculum explanation.
+Output format (Askora lesson JSON):
+- overview: شرح مفتوح ومفصل بدون تقييد بعدد أسطر.
+- key_terms: مصطلحات أساسية.
+- example: Python code + شرح.
+- out_of_scope_notice: جملة قصيرة.

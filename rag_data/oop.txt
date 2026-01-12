@@ -1,66 +1,30 @@
-You are an educational content generator for Askora.
-Generate a COMPLETE structured lesson for the topic below.
-The response MUST cover ALL required points, and you MAY add extra helpful explanations/examples as long as they stay within this topic.
-
-Topic: Object-Oriented Programming (OOP)
+Generate a comprehensive educational lesson for Askora students (BTEC IT - Jordan).
 
 Language:
-- Arabic (primary)
-- English terms between parentheses when first mentioned
+- Arabic (primary).
+- Mention English technical terms in parentheses عند أول ذكر فقط.
 
 Audience:
-- Beginner IT students (BTEC level)
+- Beginner by default.
 
-==============================
-REQUIRED CONTENT (MUST COVER)
-==============================
+Important rules:
+- Do NOT mention AI, prompts, files, datasets, RAG, or internal systems.
+- The lesson should feel natural and educational.
 
-1) Title
-- عنوان واضح بالعربية.
+Topic:
+Object-Oriented Programming (OOP)
 
-2) Overview (5–8 lines)
-- تعريف OOP: برمجة تعتمد على Objects تجمع البيانات والسلوك.
-- لماذا نستخدمها في المشاريع الكبيرة.
+Guidelines for explanation:
+- اشرح فكرة البرمجة الكائنية ولماذا ظهرت.
+- وضّح مفهوم الكائنات (Objects) والأصناف (Classes).
+- تحدث عن التجريد، التغليف، الوراثة، وتعدد الأشكال بأسلوب مبسط.
+- اشرح كيف يتم توزيع المهام داخل النظام باستخدام عدة كائنات.
+- وضّح كيف تنتقل النتيجة عبر استدعاء الدوال بين الكائنات.
+- ناقش المميزات والعيوب بشكل واقعي.
+- استخدم مثال Python بسيط يوضح class و object.
 
-3) Core Elements / Concepts (اشرح كل عنصر بوضوح)
-- Objects (الكائنات)
-- Classes (الأصناف)
-- Data Abstraction (التجريد)
-- Encapsulation (التغليف)
-- Inheritance (الوراثة)
-- Polymorphism (تعدد الأشكال)
-- Classification (التصنيف): اشرحها كفكرة “تصنيف الأشياء إلى أصناف/Classes حسب صفاتها وسلوكها”.
-- Methods/processing: اشرح أن الكائن ينفّذ سلوك عبر Methods.
-- Number of tasks (عدد المهام): اشرحها كمفهوم توزيع مسؤوليات البرنامج على عدة Objects/Classes بدل تجميع كل شيء في مكان واحد.
-
-4) “Results processed from bottom to top”
-- اشرحها ببساطة:
-  * أحيانًا النتيجة النهائية تظهر بعد تفاعل عدة كائنات: object A يستدعي method في object B… إلى أن تظهر النتيجة للمستخدم.
-  * ركّز على “تعاون الكائنات” للوصول للنتيجة.
-
-5) Advantages (اشرح كل نقطة)
-- Structured organization
-- Easier debugging and error correction
-- Reduces development time for large programs (على المدى الطويل)
-
-6) Disadvantages (اشرح كل نقطة)
-- Programs are larger and more complex
-- Higher skill level required
-
-7) Example (Python)
-- مثال بسيط يوضح class + object + encapsulation (مثلاً getter/setter بسيط) أو inheritance بسيط.
-- شرح كيف المثال يطبق المفاهيم.
-
-8) Practice + Answer + Hint
-
-9) Quiz (MCQ 4 options + correct_index + explanation)
-
-10) Learning Objectives (A)(B)(C) same as above
-
-11) Out of Scope Notice
-- advanced design patterns
-- framework-specific OOP details
-
-IMPORTANT RULES:
-- Do NOT mention AI, prompts, files, datasets, or internal sources.
-- Content must feel like a normal curriculum explanation.
+Output format (Askora lesson JSON):
+- overview: شرح مفتوح ومفصل.
+- key_terms: مصطلحات أساسية.
+- example: Python code + شرح.
+- out_of_scope_notice: جملة قصيرة.

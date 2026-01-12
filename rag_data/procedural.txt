@@ -1,34 +1,29 @@
-Generate a COMPLETE lesson for Askora students (BTEC IT - Jordan).
-Language: Arabic (primary). Put English technical terms in parentheses at first mention.
-Audience: beginner-default (مبدئي افتراضيًا).
-Do NOT mention AI, prompts, files, RAG, datasets, or sources.
+Generate a comprehensive educational lesson for Askora students (BTEC IT - Jordan).
 
-Topic: Procedural Programming
+Language:
+- Arabic (primary).
+- Mention English technical terms in parentheses عند أول ذكر فقط.
 
-MUST COVER ALL THESE POINTS (do not skip any):
-1) تعريف واضح للـ Procedural Programming.
-2) Core Elements + شرح لكل عنصر:
-   - Procedures (الإجراءات)
-   - Functions (الدوال)
-   - Predefined functions (الدوال الجاهزة)
-   - Local variables (متغيرات محلية)
-   - Global variables (متغيرات عامة)
-3) Results processed from bottom to top:
-   - فسرها كـ “الدالة الرئيسية تستدعي دوال أصغر، وكل دالة ترجع نتيجة للأعلى (return) حتى تتجمع النتيجة النهائية”.
-4) Advantages:
-   - Easier than OOP
-   - Requires less memory compared to event-driven programming
-5) Disadvantages:
-   - Harder to expand
-   - Harder to maintain code
+Audience:
+- Beginner by default.
 
-Output requirements (match Askora JSON schema):
-- overview: 5-8 أسطر
-- key_terms: 4-6 مصطلحات
-- example: Python code فقط (functions + توضيح local/global بسيط)
-- practice: سؤال + جواب + hint
-- quiz: MCQ 4 choices + correct_index + explain_ar
-- out_of_scope_notice: جملة قصيرة
+Important rules:
+- Do NOT mention AI, prompts, files, datasets, RAG, or internal systems.
+- The explanation should feel like a normal programming lesson.
 
-Extra:
-- You MAY add helpful explanations/examples as long as they remain within the topic and help students understand.
+Topic:
+Procedural Programming
+
+Guidelines for explanation:
+- اشرح مفهوم البرمجة الإجرائية وفكرة التنفيذ المتسلسل.
+- وضّح دور الدوال والإجراءات.
+- تحدث عن المتغيرات المحلية والعامة.
+- اشرح كيف تنتقل النتائج من الدوال الصغيرة إلى الدالة الرئيسية.
+- ناقش المميزات والعيوب بأسندة منطقية.
+- استخدم مثال Python بسيط يوضح functions و variables.
+
+Output format (Askora lesson JSON):
+- overview: شرح مفتوح ومفصل.
+- key_terms: مصطلحات أساسية.
+- example: Python code + شرح.
+- out_of_scope_notice: جملة قصيرة.

@@ -19,7 +19,7 @@ client = genai.Client(api_key=API_KEY)
 
 app = FastAPI(
     title="Askora AI Service",
-    version="1.5.1",
+    version="1.5.2",
     description="AI-powered educational backend for Askora (BTEC IT - Jordan)"
 )
 
@@ -52,25 +52,25 @@ def load_context(topic: str) -> str:
 # Helpers
 # =========================
 def clean_json(text: str) -> dict:
-    """
-    Removes markdown fences and parses JSON safely
-    """
     if not text:
-        raise ValueError("Empty model response")
+        raise HTTPException(status_code=500, detail="Empty model response")
 
     text = text.strip()
     text = re.sub(r"^```(?:json)?", "", text)
     text = re.sub(r"```$", "", text)
 
     try:
-        return json.loads(text.strip())
+        return json.loads(text)
     except json.JSONDecodeError:
-        raise ValueError(f"Invalid JSON returned:\n{text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Invalid JSON returned from model:\n{text}"
+        )
 
 def generate(prompt: str) -> str:
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",  # ✅ SUPPORTED & ACTIVE
+            model="gemini-2.5-flash-lite",  # ✅ WORKING & SUPPORTED
             contents=prompt
         )
         return response.text or ""
@@ -79,7 +79,6 @@ def generate(prompt: str) -> str:
             status_code=500,
             detail=f"Model generation failed: {str(e)}"
         )
-
 
 # =========================
 # Prompt rules & schemas
@@ -178,7 +177,7 @@ def lesson(req: TopicRequest):
 {context}
 \"\"\"
 
-اشرح الدرس شرحًا تعليميًا متكاملًا ومفصلًا.
+اشرح الدرس شرحًا تعليميًا متكاملًا.
 """
     return clean_json(generate(prompt))
 
@@ -196,8 +195,6 @@ def practice(req: TopicRequest):
 \"\"\"
 {context}
 \"\"\"
-
-أنشئ سؤال تدريب واحد مناسب للمبتدئين.
 """
     return clean_json(generate(prompt))
 
@@ -215,8 +212,6 @@ def quiz(req: TopicRequest):
 \"\"\"
 {context}
 \"\"\"
-
-أنشئ سؤال اختيار من متعدد واحد.
 """
     return clean_json(generate(prompt))
 

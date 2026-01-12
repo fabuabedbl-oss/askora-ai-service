@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from google import genai
 
 # ----------------------------
-# Environment
+# ENV
 # ----------------------------
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -15,10 +15,10 @@ if not API_KEY:
     raise RuntimeError("Missing API key")
 
 client = genai.Client(api_key=API_KEY)
-app = FastAPI(title="Askora AI Service", version="1.4.0")
+app = FastAPI(title="Askora AI Service", version="1.0.0")
 
 # ----------------------------
-# Topic mapping
+# TOPIC MAPPING
 # ----------------------------
 TOPIC_MAP = {
     "Event-Driven Programming": "event_driven",
@@ -37,43 +37,45 @@ def load_context(topic: str) -> str:
     if not key:
         return ""
     path = TOPIC_FILES.get(key)
-    if not path or not os.path.exists(path):
+    if not os.path.exists(path):
         return ""
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+    return open(path, "r", encoding="utf-8").read()
 
 # ----------------------------
-# Helpers
+# HELPERS
 # ----------------------------
-def clean_json(text: str) -> dict:
+def clean_json(text: str):
     text = text.strip()
-    text = re.sub(r"^```json|```$", "", text).strip()
+    text = re.sub(r"^```json|```$", "", text)
     return json.loads(text)
 
-def generate(prompt: str) -> str:
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-    return response.text or ""
+def generate(prompt: str):
+    try:
+        res = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+        return res.text
+    except Exception as e:
+        raise HTTPException(500, str(e))
 
 # ----------------------------
-# Schemas
+# SCHEMAS
 # ----------------------------
+SYSTEM_RULES = """
+أنت مدرس يشرح لطلاب BTEC IT في الأردن.
+اشرح بالعربية الفصحى المبسطة.
+اذكر المصطلحات الإنجليزية عند أول ذكر فقط.
+لا تذكر أي أنظمة داخلية أو مصادر.
+"""
+
 LESSON_SCHEMA = """
-أخرج JSON فقط بالشكل التالي:
+أخرج JSON فقط:
 {
-  "site_greeting": "",
   "title": "",
   "overview": "",
-  "key_terms": [
-    {"term_ar":"","term_en":"","definition_ar":""}
-  ],
-  "example": {
-    "description_ar":"",
-    "code":"",
-    "explain_ar":""
-  },
+  "key_terms": [{"term_ar":"","term_en":"","definition_ar":""}],
+  "example": {"code":"","explain_ar":""},
   "out_of_scope_notice": ""
 }
 """
@@ -106,17 +108,10 @@ CHAT_SCHEMA = """
 }
 """
 
-SYSTEM_RULES = """
-أنت مدرس جامعي يشرح لطلاب BTEC IT في الأردن.
-اشرح بالعربية الفصحى المبسطة.
-اذكر المصطلح الإنجليزي بين قوسين عند أول ذكر فقط.
-ممنوع ذكر AI أو prompts أو ملفات.
-"""
-
 REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora."
 
 # ----------------------------
-# Models
+# MODELS
 # ----------------------------
 class TopicRequest(BaseModel):
     topic: str
@@ -126,7 +121,7 @@ class ChatRequest(BaseModel):
     message: str
 
 # ----------------------------
-# Endpoints
+# ENDPOINTS
 # ----------------------------
 @app.post("/lesson")
 def lesson(req: TopicRequest):
@@ -143,9 +138,10 @@ def lesson(req: TopicRequest):
 {context}
 \"\"\"
 
-اشرح الدرس شرحًا تعليميًا متكاملًا.
+اشرح الموضوع شرحًا تعليميًا متكاملًا.
 """
     return clean_json(generate(prompt))
+
 
 @app.post("/practice")
 def practice(req: TopicRequest):
@@ -166,6 +162,7 @@ def practice(req: TopicRequest):
 """
     return clean_json(generate(prompt))
 
+
 @app.post("/quiz")
 def quiz(req: TopicRequest):
     context = load_context(req.topic)
@@ -181,9 +178,10 @@ def quiz(req: TopicRequest):
 {context}
 \"\"\"
 
-أنشئ سؤال اختيار من متعدد.
+أنشئ سؤال اختيار من متعدد واحد.
 """
     return clean_json(generate(prompt))
+
 
 @app.post("/chat")
 def chat(req: ChatRequest):

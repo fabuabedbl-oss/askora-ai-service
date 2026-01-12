@@ -65,7 +65,7 @@ def generate(prompt: str) -> str:
     Calls Gemini API using a SUPPORTED FREE-TIER model
     """
     response = client.models.generate_content(
-        model="gemini-3-flash-preview",  # ✅ CORRECT MODEL
+        model="gemini-1.5-pro",  # ✅ CORRECT MODEL
         contents=prompt
     )
     return response.text or ""

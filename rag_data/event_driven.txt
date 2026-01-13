@@ -1,61 +1,13 @@
-Event-Driven Programming (EDP) is a programming paradigm where the flow of execution is determined by events.
-An event can be a user action such as a mouse click or key press, a system-generated trigger like a timer, or a message received from another program.
+البرمجة المعتمدة على الأحداث (Event-Driven Programming – EDP) هي نمط برمجي يعتمد على تحديد سير تنفيذ البرنامج بناءً على حدوث أحداث معينة. يمكن أن تكون هذه الأحداث ناتجة عن تفاعل المستخدم مثل النقر على زر أو الضغط على مفتاح، أو أحداث يولدها النظام مثل المؤقتات، أو رسائل واردة من برامج أو أنظمة أخرى.
 
-Unlike traditional procedural programs that follow a fixed, sequential order, event-driven programs remain in a waiting state until an event occurs. Once an event happens, the program reacts by executing a specific piece of logic associated with that event.
+في البرامج التقليدية، يتم تنفيذ التعليمات بشكل تسلسلي ثابت من البداية إلى النهاية. أما في البرمجة المعتمدة على الأحداث، فإن البرنامج يبقى في حالة انتظار مستمرة حتى يحدث حدث معين، وعند حدوثه يتم تنفيذ منطق برمجي محدد مرتبط بهذا الحدث.
 
-1. Core Components
+العناصر الأساسية في هذا النمط البرمجي تشمل الحدث (Event) وهو الفعل أو التغيير الذي يحدث داخل النظام، وحلقة الأحداث (Event Loop) وهي آلية تعمل في الخلفية وتراقب باستمرار حدوث الأحداث، ومصدر الحدث (Event Trigger أو Source) وهو الجهة التي تولد الحدث مثل زر في واجهة المستخدم أو مؤقت زمني، ومعالج الحدث (Event Handler أو Callback) وهو الدالة أو الجزء البرمجي الذي يتم تنفيذه عند وقوع الحدث.
 
-Event:
-An event represents a specific action or occurrence, such as a button click, data arrival, or file upload.
+تمر آلية العمل بعدة مراحل تبدأ بتهيئة البرنامج وتعريف الأحداث التي يجب مراقبتها، ثم يدخل البرنامج في حلقة انتظار تستهلك موارد قليلة. عند حدوث الحدث يتم اكتشافه وتوجيهه إلى المعالج المناسب، ثم يتم تنفيذ الكود المرتبط به، وبعد الانتهاء يعود البرنامج مرة أخرى إلى حالة الانتظار.
 
-Event Loop:
-The event loop is a continuous loop that listens for incoming events. It runs in the background and waits efficiently until an event occurs.
+يُستخدم هذا النمط البرمجي على نطاق واسع في واجهات المستخدم الرسومية، متصفحات الويب، خوادم الويب مثل Node.js، وألعاب الفيديو، حيث يساعد على تحسين سرعة الاستجابة وكفاءة استخدام الموارد.
 
-Event Source (Trigger):
-The event source is the component that generates the event, such as a graphical button, a network socket, or a hardware sensor.
+من مميزات البرمجة المعتمدة على الأحداث سرعة التفاعل مع المستخدم، وفصل منطق التنفيذ عن توقيت حدوثه، وسهولة التوسعة عبر إضافة أحداث جديدة. أما من عيوبها فهي صعوبة تتبع تسلسل التنفيذ في الأنظمة المعقدة، وزيادة تعقيد التصحيح البرمجي عند وجود العديد من الأحداث المتداخلة.
 
-Event Handler (Callback):
-The event handler is a function or method that is executed in response to a specific event.
-
-2. How Event-Driven Programming Works
-
-Initialize:
-The program defines which events it is interested in and registers handlers for those events.
-
-Wait:
-The program enters the event loop and stays idle while consuming minimal system resources.
-
-Detect:
-An event occurs, such as a user clicking a button.
-
-Dispatch:
-The event loop identifies the event and forwards it to the corresponding handler.
-
-Execute:
-The event handler runs the required logic.
-
-Repeat:
-After execution, the program returns to the event loop and waits for the next event.
-
-3. Real-World Applications
-
-Graphical User Interfaces (GUIs):
-Operating systems and applications rely on events such as clicks and keyboard input.
-
-Web Servers:
-Event-driven servers like Node.js handle multiple requests efficiently using a single event loop.
-
-Games:
-Game engines use events for user input, collisions, and animations.
-
-4. Advantages and Disadvantages
-
-Advantages:
-- High responsiveness
-- Efficient resource usage
-- Easy extension by adding new events
-
-Disadvantages:
-- Non-linear execution flow
-- Harder debugging in complex systems
-- Event dependency complexity
+يمكن تشبيه هذا النمط بالنادل في المطعم، حيث لا يقوم بأي عمل إلا عند حدوث حدث مثل دخول زبون أو طلب خدمة، ثم يستجيب مباشرة لهذا الحدث.

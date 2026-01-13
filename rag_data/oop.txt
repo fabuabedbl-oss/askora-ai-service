@@ -1,42 +1,13 @@
-Object-Oriented Programming (OOP) is a programming paradigm based on the concept of objects.
-An object represents a real-world entity by combining data (attributes) and behavior (methods).
+البرمجة كائنية التوجه (Object-Oriented Programming – OOP) هي نمط برمجي يعتمد على تمثيل عناصر النظام على شكل كائنات تحاكي الكيانات الواقعية. يجمع كل كائن بين البيانات التي تمثل حالته والسلوكيات التي تعبر عن تصرفاته.
 
-Instead of writing a sequence of instructions, OOP focuses on modeling systems using interacting objects.
+على عكس البرمجة الإجرائية التي تركز على تسلسل التعليمات، تهدف البرمجة كائنية التوجه إلى بناء نماذج رقمية تتفاعل مع بعضها البعض من خلال استدعاء الدوال.
 
-1. Core Concepts
+المفهومان الأساسيان في هذا النمط هما الصنف (Class) والكائن (Object). الصنف يمثل المخطط أو القالب الذي يحدد خصائص وسلوك الكائنات، بينما الكائن هو نسخة فعلية من هذا الصنف تحتوي على قيم حقيقية في الذاكرة.
 
-Class:
-A class is a blueprint that defines the structure and behavior of objects.
+تعتمد البرمجة كائنية التوجه على أربعة مبادئ أساسية. التغليف (Encapsulation) ويعني جمع البيانات والدوال في وحدة واحدة مع حماية البيانات الداخلية. التجريد (Abstraction) ويهدف إلى إخفاء التفاصيل المعقدة وإظهار الوظائف الأساسية فقط. الوراثة (Inheritance) وتسمح بإعادة استخدام الكود من خلال إنشاء أصناف فرعية ترث خصائص أصناف أخرى. تعدد الأشكال (Polymorphism) ويتيح تنفيذ نفس الدالة بطرق مختلفة اعتمادًا على نوع الكائن.
 
-Object:
-An object is an instance of a class with actual values stored in memory.
+تعمل الأنظمة الكائنية من خلال تفاعل الكائنات مع بعضها عبر استدعاءات دوال، حيث يكون كل كائن مسؤولًا عن إدارة حالته وسلوكه.
 
-2. The Four Pillars of OOP
+من مزايا هذا النمط تحسين تنظيم الكود، وإمكانية إعادة الاستخدام، وسهولة الصيانة والتطوير المستقبلي. أما من عيوبه زيادة التعقيد مقارنة بالأنماط الأخرى، والحاجة إلى تخطيط وتصميم مسبق أكثر دقة.
 
-Encapsulation:
-Bundling data and methods together and restricting direct access to internal data.
-
-Abstraction:
-Hiding complex implementation details and exposing only essential features.
-
-Inheritance:
-Allowing a class to acquire properties and methods from another class.
-
-Polymorphism:
-Enabling the same method to behave differently depending on the object type.
-
-3. How OOP Works
-
-Objects communicate with each other through method calls.
-Each object is responsible for managing its own state and behavior.
-
-4. Advantages and Disadvantages
-
-Advantages:
-- Better code organization
-- Reusability
-- Easier maintenance
-
-Disadvantages:
-- Higher complexity
-- Requires deeper design planning
+تُستخدم البرمجة كائنية التوجه على نطاق واسع في لغات مثل Java وPython وC++ وC# وJavaScript، وتشكل الأساس لمعظم الأنظمة البرمجية الحديثة.

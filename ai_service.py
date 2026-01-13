@@ -65,20 +65,18 @@ def clean_json(text: str) -> dict:
     except json.JSONDecodeError:
         raise HTTPException(
             status_code=500,
-            detail=f"Invalid JSON returned from model:\n{text}"
+            detail="Invalid JSON returned from model"
         )
 
 # =========================
-# Model Switching Logic
+# Model Switching
 # =========================
 MODELS = [
-    "gemini-2.5-flash-lite",  # primary (fast + free)
-    "gemini-2.5-flash"        # fallback (free, more stable)
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash"
 ]
 
 def generate(prompt: str) -> str:
-    last_error = None
-
     for model in MODELS:
         try:
             response = client.models.generate_content(
@@ -86,104 +84,51 @@ def generate(prompt: str) -> str:
                 contents=prompt
             )
             return response.text or ""
-
-        except Exception as e:
-            last_error = str(e)
-
-            # If overloaded, try next model
-            if "503" in last_error or "UNAVAILABLE" in last_error:
-                time.sleep(1)
-                continue
-            else:
-                break
+        except Exception:
+            time.sleep(1)
+            continue
 
     raise HTTPException(
         status_code=503,
-        detail="The AI service is temporarily busy. Please try again in a moment."
+        detail="AI service temporarily unavailable"
     )
 
 # =========================
-# Prompt rules & schemas
+# PROMPT CONTROL (CRITICAL)
 # =========================
 SYSTEM_RULES = """
 أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
-اشرح بالعربية الفصحى المبسطة وبأسلوب تعليمي طبيعي.
-اذكر المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر فقط.
-ممنوع ذكر AI أو prompts أو ملفات أو أنظمة داخلية.
+
+التعليمات الصارمة:
+- يجب أن يكون الشرح باللغة العربية الفصحى فقط.
+- يُمنع استخدام اللغة الإنجليزية في الشرح أو العناوين أو الفقرات.
+- اللغة الإنجليزية مسموحة فقط عند ذكر المصطلحات التقنية بين قوسين عند أول ظهور لها.
+- يمنع استخدام Markdown أو التعداد النقطي أو الرموز الخاصة.
+- اكتب الشرح على شكل فقرات تعليمية متسلسلة مثل الكتاب.
+- لا تذكر أي معلومات تقنية عن الذكاء الاصطناعي أو الأنظمة الداخلية.
 """
 
 LESSON_SCHEMA = """
 أخرج JSON فقط بالشكل التالي:
 {
-  "site_greeting": "",
   "title": "",
-  "overview": "",
-  "key_terms": [
-    {"term_ar":"","term_en":"","definition_ar":""}
-  ],
-  "example": {
-    "description_ar":"",
-    "code":"",
-    "explain_ar":""
-  },
-  "out_of_scope_notice": ""
+  "content": ""
 }
 """
-
-PRACTICE_SCHEMA = """
-أخرج JSON فقط:
-{
-  "question_ar": "",
-  "answer_ar": "",
-  "hint_ar": ""
-}
-"""
-
-QUIZ_SCHEMA = """
-أخرج JSON فقط:
-{
-  "question_ar": "",
-  "choices": ["", "", "", ""],
-  "correct_index": 0,
-  "explain_ar": ""
-}
-"""
-
-CHAT_SCHEMA = """
-أخرج JSON فقط:
-{
-  "scope": "IN_SCOPE أو OUT_OF_SCOPE",
-  "answer_ar": "",
-  "related_to_topic": true/false
-}
-"""
-
-REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora. الرجاء الالتزام بموضوع الصفحة الحالية."
 
 # =========================
-# Request models
+# Request Models
 # =========================
 class TopicRequest(BaseModel):
     topic: str
 
-class ChatRequest(BaseModel):
-    topic: str
-    message: str
-
 # =========================
-# Health
+# Endpoints
 # =========================
 @app.get("/")
 def root():
     return {"status": "Askora AI Service is running"}
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-# =========================
-# Endpoints
-# =========================
 @app.post("/lesson")
 def lesson(req: TopicRequest):
     context = load_context(req.topic)
@@ -194,71 +139,13 @@ def lesson(req: TopicRequest):
 {SYSTEM_RULES}
 {LESSON_SCHEMA}
 
-المحتوى:
+المحتوى التالي مكتوب بالعربية ويجب الحفاظ على نفس الأسلوب واللغة:
+
 \"\"\"
 {context}
 \"\"\"
 
-اشرح الدرس شرحًا تعليميًا متكاملًا.
+اكتب شرحًا تفصيليًا بنفس الأسلوب المستخدم في الكتب التعليمية وبنفس طريقة العرض كما في الشرح الأكاديمي، مع الحفاظ على اللغة العربية.
 """
-    return clean_json(generate(prompt))
 
-@app.post("/practice")
-def practice(req: TopicRequest):
-    context = load_context(req.topic)
-    if not context:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    prompt = f"""
-{SYSTEM_RULES}
-{PRACTICE_SCHEMA}
-
-اعتمادًا على هذا المحتوى:
-\"\"\"
-{context}
-\"\"\"
-"""
-    return clean_json(generate(prompt))
-
-@app.post("/quiz")
-def quiz(req: TopicRequest):
-    context = load_context(req.topic)
-    if not context:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    prompt = f"""
-{SYSTEM_RULES}
-{QUIZ_SCHEMA}
-
-اعتمادًا على هذا المحتوى:
-\"\"\"
-{context}
-\"\"\"
-"""
-    return clean_json(generate(prompt))
-
-@app.post("/chat")
-def chat(req: ChatRequest):
-    context = load_context(req.topic)
-    if not context:
-        return {
-            "scope": "OUT_OF_SCOPE",
-            "answer_ar": REJECT_TEXT,
-            "related_to_topic": False
-        }
-
-    prompt = f"""
-{SYSTEM_RULES}
-{CHAT_SCHEMA}
-
-المحتوى:
-\"\"\"
-{context}
-\"\"\"
-
-سؤال الطالب:
-\"\"\"
-{req.message}
-\"\"\"
-"""
     return clean_json(generate(prompt))

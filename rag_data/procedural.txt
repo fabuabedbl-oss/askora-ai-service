@@ -1,9 +1,31 @@
-البرمجة الإجرائية (Procedural Programming) هي نمط برمجي يعتمد على تقسيم البرنامج إلى مجموعة من الدوال أو الإجراءات التي يتم تنفيذها بشكل تسلسلي.
+Procedural Programming is a programming paradigm based on a sequence of procedures or functions.
+The program executes instructions in a fixed, top-down order.
 
-في هذا النمط، يتم التركيز على الخطوات التي يجب تنفيذها للوصول إلى النتيجة، حيث تستدعي الدالة الرئيسية دوال أصغر.
+1. Core Concepts
 
-تُستخدم المتغيرات المحلية داخل الدوال، بينما يمكن استخدام المتغيرات العامة لمشاركة القيم بين عدة دوال.
+Procedures (Functions):
+Reusable blocks of code that perform specific tasks.
 
-تمر النتائج من الدوال الصغيرة إلى الدالة الرئيسية عبر قيمة الإرجاع (Return) حتى تتكون النتيجة النهائية.
+Variables:
+Data is stored separately from functions and shared when needed.
 
-يمتاز هذا النمط بالبساطة وسهولة الفهم للمبتدئين، لكنه يصبح صعب التوسعة والصيانة عندما يكبر حجم المشروع.
+Execution Flow:
+Instructions are executed step by step in a defined order.
+
+2. How Procedural Programming Works
+
+The main function controls program flow.
+Smaller functions are called to perform individual tasks.
+Data flows through return values.
+
+3. Advantages and Disadvantages
+
+Advantages:
+- Simple and easy to learn
+- Clear execution flow
+- Efficient for small programs
+
+Disadvantages:
+- Poor scalability
+- Difficult maintenance for large systems
+- Weak data protection

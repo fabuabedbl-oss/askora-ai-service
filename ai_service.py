@@ -1,16 +1,20 @@
 import os
 import json
 import re
+import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
+# =========================
+# Environment
+# =========================
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
-    raise RuntimeError("Missing GEMINI_API_KEY")
+    raise RuntimeError("Missing API key")
 
 client = genai.Client(api_key=API_KEY)
 
@@ -20,9 +24,9 @@ app = FastAPI(
     description="AI-powered educational backend for Askora (BTEC IT - Jordan)"
 )
 
-# =====================
-# Topic Mapping
-# =====================
+# =========================
+# Topic mapping
+# =========================
 TOPIC_MAP = {
     "Event-Driven Programming": "event_driven",
     "Object-Oriented Programming (OOP)": "oop",
@@ -40,54 +44,125 @@ def load_context(topic: str) -> str:
     if not key:
         return ""
     path = TOPIC_FILES.get(key)
-    if not os.path.exists(path):
+    if not path or not os.path.exists(path):
         return ""
     with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+        return f.read().strip()
 
-# =====================
+# =========================
 # Helpers
-# =====================
+# =========================
 def clean_json(text: str) -> dict:
-    text = re.sub(r"```(?:json)?", "", text).strip()
-    text = re.sub(r"```", "", text).strip()
+    if not text:
+        raise HTTPException(status_code=500, detail="Empty model response")
+
+    text = text.strip()
+    text = re.sub(r"^```(?:json)?", "", text)
+    text = re.sub(r"```$", "", text)
+
     try:
         return json.loads(text)
-    except:
-        raise HTTPException(500, "Invalid JSON returned")
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Invalid JSON returned from model:\n{text}"
+        )
+
+# =========================
+# Model Switching Logic
+# =========================
+MODELS = [
+    "gemini-2.5-flash-lite",  # primary (fast + free)
+    "gemini-2.5-flash"        # fallback (free, more stable)
+]
 
 def generate(prompt: str) -> str:
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=prompt
-    )
-    return response.text
+    last_error = None
 
-# =====================
-# Schemas
-# =====================
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt
+            )
+            return response.text or ""
+
+        except Exception as e:
+            last_error = str(e)
+
+            # If overloaded, try next model
+            if "503" in last_error or "UNAVAILABLE" in last_error:
+                time.sleep(1)
+                continue
+            else:
+                break
+
+    raise HTTPException(
+        status_code=503,
+        detail="The AI service is temporarily busy. Please try again in a moment."
+    )
+
+# =========================
+# Prompt rules & schemas
+# =========================
+SYSTEM_RULES = """
+أنت مدرس لمنصة Askora مخصص لطلاب BTEC IT في الأردن.
+اشرح بالعربية الفصحى المبسطة وبأسلوب تعليمي طبيعي.
+اذكر المصطلحات التقنية بالإنجليزية بين قوسين عند أول ذكر فقط.
+ممنوع ذكر AI أو prompts أو ملفات أو أنظمة داخلية.
+"""
+
 LESSON_SCHEMA = """
-Return JSON only:
+أخرج JSON فقط بالشكل التالي:
 {
+  "site_greeting": "",
   "title": "",
   "overview": "",
-  "sections": [],
-  "example": "",
-  "summary": ""
+  "key_terms": [
+    {"term_ar":"","term_en":"","definition_ar":""}
+  ],
+  "example": {
+    "description_ar":"",
+    "code":"",
+    "explain_ar":""
+  },
+  "out_of_scope_notice": ""
+}
+"""
+
+PRACTICE_SCHEMA = """
+أخرج JSON فقط:
+{
+  "question_ar": "",
+  "answer_ar": "",
+  "hint_ar": ""
+}
+"""
+
+QUIZ_SCHEMA = """
+أخرج JSON فقط:
+{
+  "question_ar": "",
+  "choices": ["", "", "", ""],
+  "correct_index": 0,
+  "explain_ar": ""
 }
 """
 
 CHAT_SCHEMA = """
-Return JSON only:
+أخرج JSON فقط:
 {
-  "scope": "IN_SCOPE or OUT_OF_SCOPE",
-  "answer": ""
+  "scope": "IN_SCOPE أو OUT_OF_SCOPE",
+  "answer_ar": "",
+  "related_to_topic": true/false
 }
 """
 
-# =====================
-# Requests
-# =====================
+REJECT_TEXT = "سؤالك خارج نطاق هذا الدرس في Askora. الرجاء الالتزام بموضوع الصفحة الحالية."
+
+# =========================
+# Request models
+# =========================
 class TopicRequest(BaseModel):
     topic: str
 
@@ -95,40 +170,95 @@ class ChatRequest(BaseModel):
     topic: str
     message: str
 
-# =====================
+# =========================
+# Health
+# =========================
+@app.get("/")
+def root():
+    return {"status": "Askora AI Service is running"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# =========================
 # Endpoints
-# =====================
+# =========================
 @app.post("/lesson")
 def lesson(req: TopicRequest):
     context = load_context(req.topic)
     if not context:
-        raise HTTPException(404, "Topic not found")
+        raise HTTPException(status_code=404, detail="Topic not found")
 
     prompt = f"""
-You are an educational assistant.
-Use the following material to generate a structured lesson.
-
+{SYSTEM_RULES}
 {LESSON_SCHEMA}
 
-Content:
+المحتوى:
+\"\"\"
 {context}
+\"\"\"
+
+اشرح الدرس شرحًا تعليميًا متكاملًا.
+"""
+    return clean_json(generate(prompt))
+
+@app.post("/practice")
+def practice(req: TopicRequest):
+    context = load_context(req.topic)
+    if not context:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    prompt = f"""
+{SYSTEM_RULES}
+{PRACTICE_SCHEMA}
+
+اعتمادًا على هذا المحتوى:
+\"\"\"
+{context}
+\"\"\"
+"""
+    return clean_json(generate(prompt))
+
+@app.post("/quiz")
+def quiz(req: TopicRequest):
+    context = load_context(req.topic)
+    if not context:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    prompt = f"""
+{SYSTEM_RULES}
+{QUIZ_SCHEMA}
+
+اعتمادًا على هذا المحتوى:
+\"\"\"
+{context}
+\"\"\"
 """
     return clean_json(generate(prompt))
 
 @app.post("/chat")
 def chat(req: ChatRequest):
     context = load_context(req.topic)
+    if not context:
+        return {
+            "scope": "OUT_OF_SCOPE",
+            "answer_ar": REJECT_TEXT,
+            "related_to_topic": False
+        }
 
     prompt = f"""
-Answer the question ONLY if it is related to the topic content.
-If not, mark it OUT_OF_SCOPE.
-
+{SYSTEM_RULES}
 {CHAT_SCHEMA}
 
-Topic content:
+المحتوى:
+\"\"\"
 {context}
+\"\"\"
 
-Student question:
+سؤال الطالب:
+\"\"\"
 {req.message}
+\"\"\"
 """
     return clean_json(generate(prompt))

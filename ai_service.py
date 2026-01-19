@@ -13,13 +13,13 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is not set in .env file")
 
 # =========================
-# إعداد Gemini (الطريقة الصحيحة)
+# إعداد Gemini (SDK المستقر)
 # =========================
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-pro")
 
 # =========================
-# Mapping التوبكس
+# Mapping بين التوبك وملف RAG
 # =========================
 TOPIC_MAP = {
     "Event Driven Programming": "event_driven"
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 RAG_DIR = BASE_DIR / "rag_data"
 
 # =========================
-# تحميل RAG
+# تحميل محتوى RAG
 # =========================
 def load_rag(topic_name: str) -> str:
     topic_key = TOPIC_MAP.get(topic_name)
@@ -56,32 +56,38 @@ def explain_topic(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنت مدرس IT لطلاب Level 2.
+أنت مدرس حاسوب لطلاب Level 2 IT.
 
-اشرح موضوع "{topic_name}" باللغة العربية.
-استخدم لغة بسيطة.
-اترك المصطلحات التقنية المهمة باللغة الإنجليزية.
+اشرح التوبك التالي باللغة العربية وبأسلوب مبسط:
+"{topic_name}"
 
-استخدم فقط المعلومات التالية:
+- أبقِ المصطلحات التقنية باللغة الإنجليزية
+- استخدم فقط المعلومات الموجودة في السياق
+- لا تضف معلومات من خارج المنهاج
 
+السياق:
 {rag}
 
-الإجابة:
+الشرح:
 """
     return call_gemini(prompt)
 
 # =========================
-# تمرين
+# تمرين واحد
 # =========================
 def generate_exercise(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنشئ تمرين واحد بسيط عن "{topic_name}".
-بدون كود.
-عربي مع مصطلحات إنجليزية.
+أنشئ تمرينًا واحدًا بسيطًا عن:
+"{topic_name}"
 
-المحتوى:
+- بدون كود
+- مناسب لطلاب Level 2
+- عربي مع مصطلحات تقنية إنجليزية فقط
+- اعتمادًا فقط على السياق
+
+السياق:
 {rag}
 
 التمرين:
@@ -89,45 +95,59 @@ def generate_exercise(topic_name: str) -> str:
     return call_gemini(prompt)
 
 # =========================
-# سؤال MCQ
+# سؤال اختيار من متعدد
 # =========================
 def generate_quiz(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنشئ سؤال اختيار من متعدد واحد عن "{topic_name}".
+أنشئ سؤال اختيار من متعدد (MCQ) واحد فقط عن:
+"{topic_name}"
 
-- 4 خيارات
-- إجابة صحيحة واحدة
-- مستوى Level 2
+الشروط:
+- 4 خيارات فقط (A, B, C, D)
+- إجابة واحدة صحيحة
+- مستوى سهل (Level 2)
+- عربي مع مصطلحات تقنية إنجليزية
 
-المحتوى:
+السياق:
 {rag}
 
 الصيغة:
 Question:
+...
+
 Options:
+A)
+B)
+C)
+D)
+
 Correct Answer:
 """
     return call_gemini(prompt)
 
 # =========================
-# Chat Guard
+# شات مع حارس التوبك
 # =========================
 def chat(topic_name: str, question: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنت مدرس صارم.
+أنت مدرس صارم لطلاب Level 2 IT.
 
-أجب فقط إذا كان السؤال ضمن "{topic_name}" ومستوى Level 2.
-إذا لا، أجب بالنص التالي فقط:
+التوبك: {topic_name}
+
+القواعد:
+- أجب فقط إذا كان السؤال متعلقًا بالتوبك والمستوى
+- إذا لم يكن كذلك، أجب حرفيًا:
 "عذرًا، هذا السؤال خارج نطاق هذا التوبك والمستوى المطلوب."
+- استخدم فقط السياق
 
-المحتوى:
+السياق:
 {rag}
 
-السؤال:
+سؤال الطالب:
 {question}
 
 الإجابة:

@@ -3,15 +3,18 @@ from dotenv import load_dotenv
 from pathlib import Path
 from google import genai
 
+# =========================
 # تحميل متغيرات البيئة
+# =========================
 load_dotenv()
 
-# قراءة مفتاح Gemini من .env
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is not set in .env file")
 
+# =========================
 # إنشاء Client رسمي لـ Gemini
+# =========================
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # =========================
@@ -23,7 +26,6 @@ TOPIC_MAP = {
 
 BASE_DIR = Path(__file__).resolve().parent
 RAG_DIR = BASE_DIR / "rag_data"
-
 
 # =========================
 # تحميل محتوى RAG
@@ -39,17 +41,23 @@ def load_rag(topic_name: str) -> str:
 
     return rag_file.read_text(encoding="utf-8")
 
-
 # =========================
-# استدعاء Gemini
+# استدعاء Gemini (بشكل آمن)
 # =========================
 def call_gemini(prompt: str) -> str:
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-1.5-pro",
         contents=prompt
     )
-    return response.text
 
+    # استخراج النص بطريقة متوافقة مع google-genai
+    if hasattr(response, "text") and response.text:
+        return response.text
+
+    if hasattr(response, "candidates"):
+        return response.candidates[0].content.parts[0].text
+
+    return "حدث خطأ أثناء توليد الإجابة."
 
 # =========================
 # شرح التوبك
@@ -72,7 +80,6 @@ Answer in Arabic:
 """
     return call_gemini(prompt)
 
-
 # =========================
 # تمرين واحد
 # =========================
@@ -92,7 +99,6 @@ Context:
 Exercise:
 """
     return call_gemini(prompt)
-
 
 # =========================
 # سؤال اختيار من متعدد
@@ -128,7 +134,6 @@ Correct Answer:
 <letter>
 """
     return call_gemini(prompt)
-
 
 # =========================
 # شات مع حارس التوبك

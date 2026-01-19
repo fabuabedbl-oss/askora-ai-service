@@ -13,13 +13,13 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is not set in .env file")
 
 # =========================
-# إعداد Gemini (SDK المستقر)
+# إعداد Gemini (الموديل المستقر)
 # =========================
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel("models/gemini-1.0-pro")
 
 # =========================
-# Mapping بين التوبك وملف RAG
+# Mapping التوبك → ملف RAG
 # =========================
 TOPIC_MAP = {
     "Event Driven Programming": "event_driven"
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 RAG_DIR = BASE_DIR / "rag_data"
 
 # =========================
-# تحميل محتوى RAG
+# تحميل RAG
 # =========================
 def load_rag(topic_name: str) -> str:
     topic_key = TOPIC_MAP.get(topic_name)
@@ -63,7 +63,7 @@ def explain_topic(topic_name: str) -> str:
 
 - أبقِ المصطلحات التقنية باللغة الإنجليزية
 - استخدم فقط المعلومات الموجودة في السياق
-- لا تضف معلومات من خارج المنهاج
+- لا تضف أي معلومات من خارج المنهاج
 
 السياق:
 {rag}
@@ -95,7 +95,7 @@ def generate_exercise(topic_name: str) -> str:
     return call_gemini(prompt)
 
 # =========================
-# سؤال اختيار من متعدد
+# سؤال MCQ
 # =========================
 def generate_quiz(topic_name: str) -> str:
     rag = load_rag(topic_name)
@@ -105,9 +105,9 @@ def generate_quiz(topic_name: str) -> str:
 "{topic_name}"
 
 الشروط:
-- 4 خيارات فقط (A, B, C, D)
+- 4 خيارات (A, B, C, D)
 - إجابة واحدة صحيحة
-- مستوى سهل (Level 2)
+- مستوى Level 2
 - عربي مع مصطلحات تقنية إنجليزية
 
 السياق:

@@ -19,6 +19,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 # =========================
 # Mapping بين التوبك وملف RAG
+# (مهم جدًا يكون Capital زي الفرونت)
 # =========================
 TOPIC_MAP = {
     "Event Driven Programming": "event_driven"
@@ -42,22 +43,19 @@ def load_rag(topic_name: str) -> str:
     return rag_file.read_text(encoding="utf-8")
 
 # =========================
-# استدعاء Gemini (بشكل آمن)
+# استدعاء Gemini (الصيغة الصحيحة)
 # =========================
 def call_gemini(prompt: str) -> str:
     response = client.models.generate_content(
-        model="gemini-1.5-pro",
+        model="models/gemini-1.5-pro",
         contents=prompt
     )
 
-    # استخراج النص بطريقة متوافقة مع google-genai
-    if hasattr(response, "text") and response.text:
-        return response.text
+    # أمان إضافي
+    if not response or not response.text:
+        return "حدث خطأ أثناء توليد الإجابة."
 
-    if hasattr(response, "candidates"):
-        return response.candidates[0].content.parts[0].text
-
-    return "حدث خطأ أثناء توليد الإجابة."
+    return response.text
 
 # =========================
 # شرح التوبك
@@ -66,17 +64,17 @@ def explain_topic(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-You are a teacher for Level 2 IT students.
+أنت مدرس لمادة IT لطلاب Level 2.
 
-Explain "{topic_name}" in Arabic.
-Use simple language suitable for school students.
-Keep important technical terms in English.
+اشرح موضوع "{topic_name}" باللغة العربية.
+استخدم لغة بسيطة تناسب طلاب المدارس.
+اترك المصطلحات التقنية المهمة باللغة الإنجليزية.
 
-Use ONLY the following context:
+استخدم فقط المعلومات التالية:
 
 {rag}
 
-Answer in Arabic:
+الإجابة:
 """
     return call_gemini(prompt)
 
@@ -87,16 +85,14 @@ def generate_exercise(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-You are a teacher for Level 2 IT students.
+أنشئ تمرين واحد بسيط عن "{topic_name}".
+بدون كود.
+اللغة العربية مع المصطلحات التقنية بالإنجليزي.
 
-Create ONE simple exercise about "{topic_name}".
-No coding required.
-Arabic language with English technical terms.
-
-Context:
+المحتوى:
 {rag}
 
-Exercise:
+التمرين:
 """
     return call_gemini(prompt)
 
@@ -107,22 +103,20 @@ def generate_quiz(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-You are a teacher for Level 2 IT students.
+أنشئ سؤال اختيار من متعدد (MCQ) واحد عن "{topic_name}".
 
-Create ONE multiple-choice question (MCQ) about "{topic_name}".
+الشروط:
+- 4 خيارات فقط (A, B, C, D)
+- إجابة صحيحة واحدة
+- مستوى Level 2
+- عربي مع مصطلحات إنجليزية
 
-Rules:
-- Exactly 4 options (A, B, C, D)
-- Only ONE correct answer
-- Simple Level 2 difficulty
-- Arabic with English technical terms
-
-Context:
+المحتوى:
 {rag}
 
-Output format:
+الصيغة:
 Question:
-<question>
+...
 
 Options:
 A) ...
@@ -131,7 +125,7 @@ C) ...
 D) ...
 
 Correct Answer:
-<letter>
+...
 """
     return call_gemini(prompt)
 
@@ -142,24 +136,23 @@ def chat(topic_name: str, question: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-You are a strict but helpful teacher for Level 2 IT students.
+أنت مدرس صارم ولكن متعاون لطلاب Level 2 IT.
 
-Topic: {topic_name}
-Level: Level 2 IT
+الموضوع: {topic_name}
 
-Rules:
-- Answer ONLY if the question is related to this topic and level.
-- If not related, reply exactly with:
+القواعد:
+- أجب فقط إذا كان السؤال ضمن هذا التوبك والمستوى.
+- إذا كان خارج النطاق، أجب بالنص التالي فقط:
 "عذرًا، هذا السؤال خارج نطاق هذا التوبك والمستوى المطلوب."
-- Use simple Arabic and keep technical terms in English.
-- Use ONLY the provided context.
 
-Context:
+استخدم اللغة العربية مع المصطلحات الإنجليزية.
+استخدم فقط المحتوى التالي:
+
 {rag}
 
-Student Question:
+سؤال الطالب:
 {question}
 
-Answer in Arabic:
+الإجابة:
 """
     return call_gemini(prompt)

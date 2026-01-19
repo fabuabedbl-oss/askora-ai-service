@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-from google import genai
+import google.generativeai as genai
 
 # =========================
 # تحميل متغيرات البيئة
@@ -13,13 +13,13 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is not set in .env file")
 
 # =========================
-# إنشاء Client رسمي لـ Gemini
+# إعداد Gemini (الطريقة الصحيحة)
 # =========================
-client = genai.Client(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # =========================
-# Mapping بين التوبك وملف RAG
-# (مهم جدًا يكون Capital زي الفرونت)
+# Mapping التوبكس
 # =========================
 TOPIC_MAP = {
     "Event Driven Programming": "event_driven"
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 RAG_DIR = BASE_DIR / "rag_data"
 
 # =========================
-# تحميل محتوى RAG
+# تحميل RAG
 # =========================
 def load_rag(topic_name: str) -> str:
     topic_key = TOPIC_MAP.get(topic_name)
@@ -43,18 +43,10 @@ def load_rag(topic_name: str) -> str:
     return rag_file.read_text(encoding="utf-8")
 
 # =========================
-# استدعاء Gemini (الصيغة الصحيحة)
+# استدعاء Gemini
 # =========================
 def call_gemini(prompt: str) -> str:
-    response = client.models.generate_content(
-        model="models/gemini-1.5-pro",
-        contents=prompt
-    )
-
-    # أمان إضافي
-    if not response or not response.text:
-        return "حدث خطأ أثناء توليد الإجابة."
-
+    response = model.generate_content(prompt)
     return response.text
 
 # =========================
@@ -64,10 +56,10 @@ def explain_topic(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنت مدرس لمادة IT لطلاب Level 2.
+أنت مدرس IT لطلاب Level 2.
 
 اشرح موضوع "{topic_name}" باللغة العربية.
-استخدم لغة بسيطة تناسب طلاب المدارس.
+استخدم لغة بسيطة.
 اترك المصطلحات التقنية المهمة باللغة الإنجليزية.
 
 استخدم فقط المعلومات التالية:
@@ -79,7 +71,7 @@ def explain_topic(topic_name: str) -> str:
     return call_gemini(prompt)
 
 # =========================
-# تمرين واحد
+# تمرين
 # =========================
 def generate_exercise(topic_name: str) -> str:
     rag = load_rag(topic_name)
@@ -87,7 +79,7 @@ def generate_exercise(topic_name: str) -> str:
     prompt = f"""
 أنشئ تمرين واحد بسيط عن "{topic_name}".
 بدون كود.
-اللغة العربية مع المصطلحات التقنية بالإنجليزي.
+عربي مع مصطلحات إنجليزية.
 
 المحتوى:
 {rag}
@@ -97,60 +89,45 @@ def generate_exercise(topic_name: str) -> str:
     return call_gemini(prompt)
 
 # =========================
-# سؤال اختيار من متعدد
+# سؤال MCQ
 # =========================
 def generate_quiz(topic_name: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنشئ سؤال اختيار من متعدد (MCQ) واحد عن "{topic_name}".
+أنشئ سؤال اختيار من متعدد واحد عن "{topic_name}".
 
-الشروط:
-- 4 خيارات فقط (A, B, C, D)
+- 4 خيارات
 - إجابة صحيحة واحدة
 - مستوى Level 2
-- عربي مع مصطلحات إنجليزية
 
 المحتوى:
 {rag}
 
 الصيغة:
 Question:
-...
-
 Options:
-A) ...
-B) ...
-C) ...
-D) ...
-
 Correct Answer:
-...
 """
     return call_gemini(prompt)
 
 # =========================
-# شات مع حارس التوبك
+# Chat Guard
 # =========================
 def chat(topic_name: str, question: str) -> str:
     rag = load_rag(topic_name)
 
     prompt = f"""
-أنت مدرس صارم ولكن متعاون لطلاب Level 2 IT.
+أنت مدرس صارم.
 
-الموضوع: {topic_name}
-
-القواعد:
-- أجب فقط إذا كان السؤال ضمن هذا التوبك والمستوى.
-- إذا كان خارج النطاق، أجب بالنص التالي فقط:
+أجب فقط إذا كان السؤال ضمن "{topic_name}" ومستوى Level 2.
+إذا لا، أجب بالنص التالي فقط:
 "عذرًا، هذا السؤال خارج نطاق هذا التوبك والمستوى المطلوب."
 
-استخدم اللغة العربية مع المصطلحات الإنجليزية.
-استخدم فقط المحتوى التالي:
-
+المحتوى:
 {rag}
 
-سؤال الطالب:
+السؤال:
 {question}
 
 الإجابة:

@@ -1,10 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from ai_service import explain_topic, generate_exercise, generate_quiz, chat
+from ai_service import (
+    explain_topic,
+    generate_exercise,
+    generate_quiz,
+    chat_with_guard
+)
 
-app = FastAPI(title="Askora AI Service")
+app = FastAPI(
+    title="Askora AI Service",
+    version="2.0.0",
+    description="AI-powered educational backend for Askora (BTEC IT)"
+)
 
-
+# =========================
+# Request Models
+# =========================
 class TopicRequest(BaseModel):
     topic: str
 
@@ -14,21 +25,41 @@ class ChatRequest(BaseModel):
     question: str
 
 
+# =========================
+# Health
+# =========================
+@app.get("/")
+def root():
+    return {"status": "Askora AI Service is running"}
+
+
+# =========================
+# Endpoints
+# =========================
 @app.post("/explain")
 def explain(req: TopicRequest):
-    return {"answer": explain_topic(req.topic)}
+    try:
+        return {"answer": explain_topic(req.topic)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/exercise")
 def exercise(req: TopicRequest):
-    return {"answer": generate_exercise(req.topic)}
+    try:
+        return {"answer": generate_exercise(req.topic)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/quiz")
 def quiz(req: TopicRequest):
-    return {"answer": generate_quiz(req.topic)}
+    try:
+        return {"answer": generate_quiz(req.topic)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/chat")
-def chat_endpoint(req: ChatRequest):
-    return {"answer": chat(req.topic, req.question)}
+def chat(req: ChatRequest):
+    return {"answer": chat_with_guard(req.topic, req.question)}

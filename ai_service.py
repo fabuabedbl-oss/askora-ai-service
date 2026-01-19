@@ -1,155 +1,127 @@
 import os
-from dotenv import load_dotenv
+import time
 from pathlib import Path
-import google.generativeai as genai
+from dotenv import load_dotenv
+from google import genai
 
 # =========================
-# تحميل متغيرات البيئة
+# Environment
 # =========================
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY is not set in .env file")
+API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if not API_KEY:
+    raise RuntimeError("Missing GEMINI_API_KEY")
+
+client = genai.Client(api_key=API_KEY)
 
 # =========================
-# إعداد Gemini (الموديل المستقر)
-# =========================
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("models/gemini-1.0-pro")
-
-# =========================
-# Mapping التوبك → ملف RAG
+# Topic Mapping
 # =========================
 TOPIC_MAP = {
-    "Event Driven Programming": "event_driven"
+    "Event Driven Programming": "event_driven",
+    "Object Oriented Programming": "oop",
+    "Procedural Programming": "procedural"
 }
 
 BASE_DIR = Path(__file__).resolve().parent
 RAG_DIR = BASE_DIR / "rag_data"
 
-# =========================
-# تحميل RAG
-# =========================
-def load_rag(topic_name: str) -> str:
-    topic_key = TOPIC_MAP.get(topic_name)
-    if not topic_key:
-        raise ValueError("Unknown topic")
+def load_rag(topic: str) -> str:
+    key = TOPIC_MAP.get(topic)
+    if not key:
+        raise ValueError("Topic not supported")
 
-    rag_file = RAG_DIR / f"{topic_key}.txt"
-    if not rag_file.exists():
-        raise FileNotFoundError(f"RAG file not found: {rag_file}")
+    file_path = RAG_DIR / f"{key}.txt"
+    if not file_path.exists():
+        raise ValueError("RAG file missing")
 
-    return rag_file.read_text(encoding="utf-8")
+    return file_path.read_text(encoding="utf-8")
 
 # =========================
-# استدعاء Gemini
+# Gemini Models (الصحيحة)
 # =========================
+MODELS = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash"
+]
+
 def call_gemini(prompt: str) -> str:
-    response = model.generate_content(prompt)
-    return response.text
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt
+            )
+            return response.text or ""
+        except Exception as e:
+            if "503" in str(e):
+                time.sleep(1)
+                continue
+            break
+    raise RuntimeError("Gemini unavailable")
 
 # =========================
-# شرح التوبك
+# Business Logic
 # =========================
-def explain_topic(topic_name: str) -> str:
-    rag = load_rag(topic_name)
+def explain_topic(topic: str) -> str:
+    rag = load_rag(topic)
 
     prompt = f"""
-أنت مدرس حاسوب لطلاب Level 2 IT.
+You are a teacher for BTEC IT students.
 
-اشرح التوبك التالي باللغة العربية وبأسلوب مبسط:
-"{topic_name}"
+Explain the topic in Arabic.
+Use simple academic language.
+Mention technical terms in English only when needed.
 
-- أبقِ المصطلحات التقنية باللغة الإنجليزية
-- استخدم فقط المعلومات الموجودة في السياق
-- لا تضف أي معلومات من خارج المنهاج
-
-السياق:
+Context:
 {rag}
-
-الشرح:
 """
     return call_gemini(prompt)
 
-# =========================
-# تمرين واحد
-# =========================
-def generate_exercise(topic_name: str) -> str:
-    rag = load_rag(topic_name)
+
+def generate_exercise(topic: str) -> str:
+    rag = load_rag(topic)
 
     prompt = f"""
-أنشئ تمرينًا واحدًا بسيطًا عن:
-"{topic_name}"
+Create ONE simple practice question.
+Arabic language.
+No programming required.
 
-- بدون كود
-- مناسب لطلاب Level 2
-- عربي مع مصطلحات تقنية إنجليزية فقط
-- اعتمادًا فقط على السياق
-
-السياق:
+Context:
 {rag}
-
-التمرين:
 """
     return call_gemini(prompt)
 
-# =========================
-# سؤال MCQ
-# =========================
-def generate_quiz(topic_name: str) -> str:
-    rag = load_rag(topic_name)
+
+def generate_quiz(topic: str) -> str:
+    rag = load_rag(topic)
 
     prompt = f"""
-أنشئ سؤال اختيار من متعدد (MCQ) واحد فقط عن:
-"{topic_name}"
+Create ONE multiple choice question.
+4 options.
+Mention the correct answer clearly.
 
-الشروط:
-- 4 خيارات (A, B, C, D)
-- إجابة واحدة صحيحة
-- مستوى Level 2
-- عربي مع مصطلحات تقنية إنجليزية
+Context:
+{rag}
+"""
+    return call_gemini(prompt)
 
-السياق:
+
+def chat_with_guard(topic: str, question: str) -> str:
+    rag = load_rag(topic)
+
+    prompt = f"""
+You are a strict instructor.
+
+Rules:
+- If the question is unrelated, answer exactly:
+"عذرًا، هذا السؤال خارج نطاق هذا التوبك."
+
+Context:
 {rag}
 
-الصيغة:
 Question:
-...
-
-Options:
-A)
-B)
-C)
-D)
-
-Correct Answer:
-"""
-    return call_gemini(prompt)
-
-# =========================
-# شات مع حارس التوبك
-# =========================
-def chat(topic_name: str, question: str) -> str:
-    rag = load_rag(topic_name)
-
-    prompt = f"""
-أنت مدرس صارم لطلاب Level 2 IT.
-
-التوبك: {topic_name}
-
-القواعد:
-- أجب فقط إذا كان السؤال متعلقًا بالتوبك والمستوى
-- إذا لم يكن كذلك، أجب حرفيًا:
-"عذرًا، هذا السؤال خارج نطاق هذا التوبك والمستوى المطلوب."
-- استخدم فقط السياق
-
-السياق:
-{rag}
-
-سؤال الطالب:
 {question}
-
-الإجابة:
 """
     return call_gemini(prompt)

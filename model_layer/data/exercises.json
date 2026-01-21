@@ -1,0 +1,13 @@
+{
+  "Event-Driven Programming": {
+    "Beginner": [
+      {
+        "id": 1,
+        "question": "اشرح ماذا يحدث عندما يضغط المستخدم على زر في تطبيق.",
+        "expected_points": ["Event", "حدث", "Event Handler", "معالج"]
+      }
+    ],
+    "Intermediate": [],
+    "Advanced": []
+  }
+}

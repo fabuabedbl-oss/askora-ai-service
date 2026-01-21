@@ -1,0 +1,19 @@
+{
+  "Event-Driven Programming": {
+    "Beginner": [
+      {
+        "id": 1,
+        "question": "ما وظيفة Event Loop؟",
+        "options": [
+          "تشغيل البرنامج مرة واحدة",
+          "مراقبة الأحداث وتنفيذها",
+          "تخزين البيانات",
+          "عرض الواجهة"
+        ],
+        "correct_index": 1
+      }
+    ],
+    "Intermediate": [],
+    "Advanced": []
+  }
+}

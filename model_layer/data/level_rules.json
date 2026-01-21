@@ -1,0 +1,5 @@
+{
+  "Beginner": { "min": 0, "max": 2 },
+  "Intermediate": { "min": 2, "max": 4 },
+  "Advanced": { "min": 4, "max": 5 }
+}

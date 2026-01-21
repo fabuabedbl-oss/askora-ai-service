@@ -1,30 +1,33 @@
-TOPIC: Event Driven Programming
+TOPIC: Event-Driven Programming
 LEVEL: Level 2 IT – Unit 5: Introduction to Programming (Pearson BTEC – Jordan)
 
 LEARNING_OUTCOMES:
-- فهم نموذج البرمجة القائم على الأحداث (Event Driven Programming).
-- التعرف على المفاهيم الأساسية مثل Event و Event Handler.
-- ربط النموذج بأمثلة بسيطة من التطبيقات اليومية.
-- معرفة المزايا والعيوب بمستوى Level 2.
+- فهم نموذج البرمجة القائم على الأحداث.
+- التعرف على Event و Event Handler.
+- ربط النموذج بتفاعل المستخدم.
+- معرفة المزايا والعيوب.
+
+SCENARIO:
+يقوم المستخدم بفتح تطبيق.
+التطبيق يعرض زر على الشاشة.
+المستخدم يضغط على الزر.
+بعد الضغط، تظهر رسالة للمستخدم.
+
+SCENARIO_SOLUTION:
+البرنامج لا يعرف متى سيضغط المستخدم على الزر.
+لذلك يبقى البرنامج يعمل وينتظر.
+عند ضغط المستخدم على الزر، يعتبر هذا حدث.
+البرنامج يلتقط الحدث.
+ثم ينفذ الكود المرتبط بهذا الحدث ويعرض رسالة.
 
 CORE_EXPLANATION:
-البرمجة القائمة على الأحداث (Event Driven Programming) هي أسلوب برمجة يعتمد على حدوث حدث (Event) لتنفيذ جزء معين من البرنامج.
-
-الحدث (Event) يمكن أن يكون:
-- الضغط على زر (Button Click)
-- الضغط على مفتاح من لوحة المفاتيح (Key Press)
-- لمس الشاشة (Touch)
-- تحريك الفأرة (Mouse Movement)
-
-في هذا النموذج، يبقى البرنامج يعمل من خلال حلقة تُسمّى حلقة الأحداث (Event Loop).
-عند حدوث الحدث، يتم تشغيل جزء من الكود يُسمّى معالج الحدث (Event Handler).
+البرمجة القائمة على الأحداث (Event Driven Programming) هي أسلوب برمجة يعتمد على انتظار حدوث حدث لتنفيذ جزء معين من البرنامج.
+البرنامج لا يعمل بشكل متسلسل من البداية إلى النهاية، بل ينتظر تفاعل المستخدم أو النظام.
 
 العناصر الأساسية:
-- Event: الشيء الذي يحدث.
+- Event: شيء يحدث مثل الضغط على زر.
 - Event Handler: الكود الذي يعمل عند حدوث الحدث.
-- Event Loop: تبقي البرنامج يعمل وتستقبل الأحداث.
-
-هذا النموذج شائع في تطبيقات الواجهات الرسومية (GUI) وتطبيقات الهواتف.
+- Event Loop: تبقي البرنامج يعمل وتنتظر الأحداث.
 
 PROGRAMMING_LANGUAGES:
 يمكن تطبيق Event Driven Programming باستخدام لغات مثل:
@@ -32,21 +35,22 @@ PROGRAMMING_LANGUAGES:
 - JavaScript
 - Java
 
-SIMPLE_CODE_EXAMPLE:
-Pseudo example:
-When a button is clicked:
-    print("Button was clicked")
+PSEUDO_CODE_EXAMPLE:
+Program is running
+Wait for event
+
+When button is clicked
+    Display message
 
 ADVANTAGES:
-- سهل التعلم للمبتدئين.
-- يعتمد على تفاعل المستخدم.
-- سهل إضافة ميزات جديدة.
+- تجعل البرنامج تفاعلياً.
+- سهلة الفهم للمبتدئين.
+- مناسبة للتطبيقات الحديثة.
 
 DISADVANTAGES:
-- تدفق التنفيذ قد يكون أصعب في البرامج الكبيرة.
-- يحتاج إلى تنظيم جيد للأحداث.
+- صعوبة تتبع التنفيذ في البرامج الكبيرة.
+- تحتاج إلى تنظيم جيد للأحداث.
 
 FACTS_FOR_QUIZZES:
-- Event Driven Programming تعتمد على Event.
-- Event Handler ينفذ الكود عند حدوث Event.
+- Event Handler يعمل عند حدوث Event.
 - Event Loop تبقي البرنامج يعمل.

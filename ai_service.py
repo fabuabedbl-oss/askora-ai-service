@@ -1,127 +1,182 @@
-import os
-import time
+import random
+import json
 from pathlib import Path
-from dotenv import load_dotenv
-from google import genai
 
-# =========================
-# Environment
-# =========================
-load_dotenv()
+# ===== AI =====
+from model_layer.ai.explanation_generator import generate_explanation
+from model_layer.ai.feedback_generator import generate_exercise_feedback
+from model_layer.ai.chat_guard import chat_with_topic_guard
 
-API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if not API_KEY:
-    raise RuntimeError("Missing GEMINI_API_KEY")
+# ===== Evaluation =====
+from model_layer.evaluation.exercise_evaluator import evaluate_exercise
+from model_layer.evaluation.quiz_evaluator import evaluate_quiz
 
-client = genai.Client(api_key=API_KEY)
-
-# =========================
-# Topic Mapping
-# =========================
-TOPIC_MAP = {
-    "Event Driven Programming": "event_driven",
-    "Object Oriented Programming": "oop",
-    "Procedural Programming": "procedural"
-}
-
+# ===== Paths =====
 BASE_DIR = Path(__file__).resolve().parent
-RAG_DIR = BASE_DIR / "rag_data"
+DATA_DIR = BASE_DIR / "model_layer" / "data"
 
-def load_rag(topic: str) -> str:
-    key = TOPIC_MAP.get(topic)
-    if not key:
-        raise ValueError("Topic not supported")
+# ===== Load Data =====
+with open(DATA_DIR / "exercises.json", encoding="utf-8") as f:
+    EXERCISES = json.load(f)
 
-    file_path = RAG_DIR / f"{key}.txt"
-    if not file_path.exists():
-        raise ValueError("RAG file missing")
+with open(DATA_DIR / "quizzes.json", encoding="utf-8") as f:
+    QUIZZES = json.load(f)
 
-    return file_path.read_text(encoding="utf-8")
 
-# =========================
-# Gemini Models (الصحيحة)
-# =========================
-MODELS = [
-    "gemini-2.5-flash-lite",
-    "gemini-2.5-flash"
-]
+# =====================================================
+#                     EXPLANATION
+# =====================================================
 
-def call_gemini(prompt: str) -> str:
-    for model in MODELS:
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt
-            )
-            return response.text or ""
-        except Exception as e:
-            if "503" in str(e):
-                time.sleep(1)
-                continue
+def explain_topic(topic: str, level: str | None = None) -> str:
+    """
+    تستخدمها endpoint: /explain
+    لو الطالب Visitor → level = Beginner
+    """
+    level = level or "Beginner"
+    return generate_explanation(topic, level)
+
+
+# =====================================================
+#                     EXERCISES
+# =====================================================
+
+def generate_exercise_item(topic: str, level: str | None = None) -> dict:
+    """
+    ترجع سؤال تدريب واحد فقط
+    """
+    level = level or "Beginner"
+
+    topic_data = EXERCISES.get(topic)
+    if not topic_data:
+        return {"error": "NO_EXERCISES_FOR_TOPIC"}
+
+    level_items = topic_data.get(level) or topic_data.get("Beginner", [])
+    if not level_items:
+        return {"error": "NO_EXERCISES_FOR_LEVEL"}
+
+    item = random.choice(level_items)
+
+    return {
+        "id": item["id"],
+        "question": item["question"],
+        "instruction": "اكتب إجابتك بأسلوبك الخاص، لا تعتمد على الحفظ."
+    }
+
+
+def evaluate_exercise_answer(
+    topic: str,
+    exercise_id: int,
+    student_answer: str
+) -> dict:
+    """
+    تقييم إجابة التدريب + feedback
+    """
+    topic_data = EXERCISES.get(topic)
+    if not topic_data:
+        return {"error": "NO_EXERCISES_FOR_TOPIC"}
+
+    target_item = None
+    for level_items in topic_data.values():
+        for item in level_items:
+            if item["id"] == exercise_id:
+                target_item = item
+                break
+        if target_item:
             break
-    raise RuntimeError("Gemini unavailable")
 
-# =========================
-# Business Logic
-# =========================
-def explain_topic(topic: str) -> str:
-    rag = load_rag(topic)
+    if not target_item:
+        return {"error": "EXERCISE_NOT_FOUND"}
 
-    prompt = f"""
-You are a teacher for BTEC IT students.
+    expected_points = target_item.get("expected_points", [])
 
-Explain the topic in Arabic.
-Use simple academic language.
-Mention technical terms in English only when needed.
+    eval_result = evaluate_exercise(student_answer, expected_points)
 
-Context:
-{rag}
-"""
-    return call_gemini(prompt)
+    feedback = generate_exercise_feedback(
+        topic=topic,
+        student_answer=student_answer,
+        covered_points=eval_result["covered_points"],
+        missing_points=eval_result["missing_points"]
+    )
 
-
-def generate_exercise(topic: str) -> str:
-    rag = load_rag(topic)
-
-    prompt = f"""
-Create ONE simple practice question.
-Arabic language.
-No programming required.
-
-Context:
-{rag}
-"""
-    return call_gemini(prompt)
+    return {
+        "score_5": eval_result["score_5"],
+        "is_correct": eval_result["is_correct"],
+        "covered_points": eval_result["covered_points"],
+        "missing_points": eval_result["missing_points"],
+        "feedback": feedback
+    }
 
 
-def generate_quiz(topic: str) -> str:
-    rag = load_rag(topic)
+# =====================================================
+#                     QUIZZES
+# =====================================================
 
-    prompt = f"""
-Create ONE multiple choice question.
-4 options.
-Mention the correct answer clearly.
+def generate_quiz_item(topic: str, level: str | None = None) -> dict:
+    """
+    ترجع سؤال كويز MCQ بدون الإجابة الصحيحة
+    """
+    level = level or "Beginner"
 
-Context:
-{rag}
-"""
-    return call_gemini(prompt)
+    topic_data = QUIZZES.get(topic)
+    if not topic_data:
+        return {"error": "NO_QUIZZES_FOR_TOPIC"}
+
+    level_items = topic_data.get(level) or topic_data.get("Beginner", [])
+    if not level_items:
+        return {"error": "NO_QUIZZES_FOR_LEVEL"}
+
+    item = random.choice(level_items)
+
+    return {
+        "id": item["id"],
+        "question": item["question"],
+        "options": item["options"]
+    }
 
 
-def chat_with_guard(topic: str, question: str) -> str:
-    rag = load_rag(topic)
+def evaluate_quiz_answer(
+    topic: str,
+    quiz_id: int,
+    student_choice_index: int
+) -> dict:
+    """
+    تقييم إجابة الكويز
+    """
+    topic_data = QUIZZES.get(topic)
+    if not topic_data:
+        return {"error": "NO_QUIZZES_FOR_TOPIC"}
 
-    prompt = f"""
-You are a strict instructor.
+    target_item = None
+    for level_items in topic_data.values():
+        for item in level_items:
+            if item["id"] == quiz_id:
+                target_item = item
+                break
+        if target_item:
+            break
 
-Rules:
-- If the question is unrelated, answer exactly:
-"عذرًا، هذا السؤال خارج نطاق هذا التوبك."
+    if not target_item:
+        return {"error": "QUIZ_NOT_FOUND"}
 
-Context:
-{rag}
+    eval_result = evaluate_quiz(
+        student_choice_index,
+        target_item["correct_index"]
+    )
 
-Question:
-{question}
-"""
-    return call_gemini(prompt)
+    return {
+        "score_5": eval_result["score_5"],
+        "is_correct": eval_result["is_correct"]
+    }
+
+
+# =====================================================
+#                       CHAT
+# =====================================================
+
+def chat(topic: str, question: str) -> str:
+    """
+    شات محكوم بالتوبك
+    - داخل التوبك → جواب
+    - خارج التوبك → اعتذار ثابت
+    """
+    return chat_with_topic_guard(topic, question)

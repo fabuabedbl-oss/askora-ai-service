@@ -1,6 +1,7 @@
 import random
 import json
 from pathlib import Path
+from typing import Optional, Dict
 
 # ===================== AI MODULES =====================
 
@@ -29,32 +30,23 @@ with open(DATA_DIR / "quizzes.json", encoding="utf-8") as f:
 
 # ===================== MEMORY (LAST FAILED) =====================
 
-# per-topic memory (sufficient for Swagger & graduation project)
-LAST_FAILED_EXERCISE: dict[str, int] = {}
+LAST_FAILED_EXERCISE: Dict[str, int] = {}
 
 # ===================== EXPLANATION =====================
 
-def explain_topic(topic: str, level: str | None = None) -> str:
-    """
-    شرح الدرس الكامل حسب المستوى (AI Explanation)
-    """
+def explain_topic(topic: str, level: Optional[str] = None) -> str:
     return generate_explanation(topic, level or "Beginner")
 
 # ===================== EXERCISES =====================
 
 def generate_exercise_item(
     topic: str,
-    level: str | None = None,
+    level: Optional[str] = None,
     use_ai: bool = False
-) -> dict:
-    """
-    use_ai = False → سؤال رسمي من بنك الأسئلة (يُحسب)
-    use_ai = True  → AI Tutor (شرح + مثال + تلميحات) غير محسوب
-    """
-
+) -> Dict:
     level = level or "Beginner"
 
-    # -------- 1️⃣ OFFICIAL QUESTION (COUNTED) --------
+    # -------- OFFICIAL QUESTION --------
     if not use_ai:
         topic_data = EXERCISES.get(topic, {})
         level_items = topic_data.get(level) or topic_data.get("Beginner", [])
@@ -77,7 +69,7 @@ def generate_exercise_item(
             "counted": False
         }
 
-    # -------- 2️⃣ AI TUTOR (SUPPORT ONLY) --------
+    # -------- AI TUTOR --------
     last_id = LAST_FAILED_EXERCISE.get(topic)
     focus_points = None
 
@@ -107,11 +99,7 @@ def evaluate_exercise_answer(
     topic: str,
     exercise_id: int,
     student_answer: str
-) -> dict:
-    """
-    تقييم إجابة تمرين رسمي + feedback
-    """
-
+) -> Dict:
     for items in EXERCISES.get(topic, {}).values():
         for item in items:
             if item["id"] == exercise_id:
@@ -120,7 +108,6 @@ def evaluate_exercise_answer(
                     item.get("expected_points", [])
                 )
 
-                # حفظ آخر تمرين ضعيف
                 if result["score_5"] < 4:
                     LAST_FAILED_EXERCISE[topic] = exercise_id
 
@@ -144,9 +131,9 @@ def evaluate_exercise_answer(
 
 def generate_quiz_item(
     topic: str,
-    level: str | None = None,
+    level: Optional[str] = None,
     use_ai: bool = False
-) -> dict:
+) -> Dict:
     level = level or "Beginner"
 
     if not use_ai:
@@ -179,7 +166,7 @@ def evaluate_quiz_answer(
     topic: str,
     quiz_id: int,
     student_choice_index: int
-) -> dict:
+) -> Dict:
     for items in QUIZZES.get(topic, {}).values():
         for q in items:
             if q["id"] == quiz_id:

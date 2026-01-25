@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Optional
 from model_layer.ai.gemini_client import call_gemini
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -11,7 +12,6 @@ TOPIC_MAP = {
     "OOP": "oop",
 }
 
-
 def _load_rag(topic: str) -> str:
     key = TOPIC_MAP.get(topic)
     if not key:
@@ -19,11 +19,10 @@ def _load_rag(topic: str) -> str:
     path = RAG_DIR / f"{key}.txt"
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
-
 def generate_ai_tutor(
     topic: str,
     level: str = "Beginner",
-    focus_points: list[str] | None = None
+    focus_points: Optional[List[str]] = None
 ) -> str:
     rag = _load_rag(topic)
     focus_text = "، ".join(focus_points) if focus_points else "المفهوم الأساسي في هذا الدرس"

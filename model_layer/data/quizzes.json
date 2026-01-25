@@ -1,19 +1,78 @@
 {
   "Event-Driven Programming": {
     "Beginner": [
-      {
-        "id": 1,
-        "question": "ما وظيفة Event Loop؟",
-        "options": [
-          "تشغيل البرنامج مرة واحدة",
-          "مراقبة الأحداث وتنفيذها",
-          "تخزين البيانات",
-          "عرض الواجهة"
-        ],
-        "correct_index": 1
-      }
+      { "id": 1, "question": "ما هو Event؟", "options": ["دالة", "حدث", "كائن", "متغير"], "correct_index": 1 },
+      { "id": 2, "question": "متى يعمل Event Handler؟", "options": ["عند بدء البرنامج", "عند حدوث حدث", "عند إنهاء البرنامج", "عند تعريف المتغيرات"], "correct_index": 1 },
+      { "id": 3, "question": "ما وظيفة Event Loop؟", "options": ["تنفيذ البرنامج مرة واحدة", "انتظار الأحداث وتنفيذها", "تخزين البيانات", "عرض الواجهة"], "correct_index": 1 },
+      { "id": 4, "question": "الضغط على زر في التطبيق يمثل:", "options": ["Class", "Event", "Method", "Variable"], "correct_index": 1 },
+      { "id": 5, "question": "أي تطبيق يعتمد على Event-Driven Programming؟", "options": ["برنامج حسابي بسيط", "تطبيق واجهة تفاعلية", "ملف نصي", "برنامج خطي"], "correct_index": 1 },
+      { "id": 6, "question": "أي مما يلي يُعد Event؟", "options": ["تعريف متغير", "تحريك الماوس", "كتابة دالة", "إنهاء البرنامج"], "correct_index": 1 },
+      { "id": 7, "question": "Event Handler هو:", "options": ["حدث", "كود يستجيب لحدث", "حلقة تكرار", "متغير"], "correct_index": 1 },
+      { "id": 8, "question": "لماذا يبقى البرنامج في وضع انتظار؟", "options": ["لإنهاء التنفيذ", "لاستقبال الأحداث", "لتخزين البيانات", "لعرض الكود"], "correct_index": 1 },
+      { "id": 9, "question": "أي نمط يعتمد على تفاعل المستخدم؟", "options": ["Procedural", "OOP", "Event-Driven", "Sequential"], "correct_index": 2 },
+      { "id": 10, "question": "متى يتم تنفيذ الكود في Event-Driven Programming؟", "options": ["من أول سطر", "عند حدوث حدث", "بعد انتهاء البرنامج", "عند تعريف المتغير"], "correct_index": 1 }
     ],
-    "Intermediate": [],
-    "Advanced": []
+
+    "Intermediate": [
+      { "id": 11, "question": "ما دور Event Listener؟", "options": ["تنفيذ الكود", "مراقبة الأحداث", "تخزين البيانات", "إيقاف البرنامج"], "correct_index": 1 },
+      { "id": 12, "question": "ما العلاقة بين Event و Event Handler؟", "options": ["لا علاقة", "الحدث يشغّل المعالج", "المعالج ينشئ الحدث", "كلاهما نفس الشيء"], "correct_index": 1 },
+      { "id": 13, "question": "لماذا يصعب تتبع التنفيذ في البرامج المعتمدة على الأحداث؟", "options": ["لأن الكود قصير", "لأن الأحداث غير متسلسلة", "لعدم وجود دوال", "لأن التنفيذ خطي"], "correct_index": 1 },
+      { "id": 14, "question": "أي مما يلي يسبب تعقيداً في Event-Driven Programming؟", "options": ["حدث واحد", "تعدد الأحداث", "برنامج صغير", "تنفيذ خطي"], "correct_index": 1 },
+      { "id": 15, "question": "Event Loop مسؤولة عن:", "options": ["إيقاف البرنامج", "الاستماع المستمر للأحداث", "تعريف الكائنات", "تنفيذ الكود مرة واحدة"], "correct_index": 1 },
+      { "id": 16, "question": "ما نوع أسلوب التنفيذ في Event-Driven Programming؟", "options": ["Bottom-up", "Top-down", "Sequential", "Parallel"], "correct_index": 1 }
+    ],
+
+    "Advanced": [
+      { "id": 17, "question": "أي سيناريو غير مناسب لـ Event-Driven Programming؟", "options": ["واجهة مستخدم", "نظام تفاعلي", "حسابات متسلسلة", "تطبيق ويب"], "correct_index": 2 },
+      { "id": 18, "question": "ما التأثير السلبي لكثرة الأحداث؟", "options": ["تحسين الأداء", "استهلاك موارد النظام", "تبسيط الكود", "تقليل الذاكرة"], "correct_index": 1 },
+      { "id": 19, "question": "أي نمط برمجي أنسب للتطبيقات التفاعلية؟", "options": ["Procedural", "Event-Driven", "Sequential", "None"], "correct_index": 1 },
+      { "id": 20, "question": "لماذا يحتاج هذا النمط إلى تنظيم جيد؟", "options": ["لقلة الأحداث", "لتجنب تعقيد التدفق", "لأنه خطي", "لأنه بسيط"], "correct_index": 1 }
+    ]
+  },
+
+  "Object-Oriented Programming": {
+    "Beginner": [
+      { "id": 21, "question": "ما هو Object؟", "options": ["نسخة من Class", "دالة", "حلقة", "متغير"], "correct_index": 0 },
+      { "id": 22, "question": "ما هو Class؟", "options": ["كائن", "قالب لإنشاء الكائنات", "إجراء", "متغير"], "correct_index": 1 },
+      { "id": 23, "question": "Attribute تمثل:", "options": ["سلوك", "خاصية", "حدث", "حلقة"], "correct_index": 1 },
+      { "id": 24, "question": "Method تمثل:", "options": ["خاصية", "سلوك", "متغير", "حدث"], "correct_index": 1 },
+      { "id": 25, "question": "أي مفهوم يخفي تفاصيل التنفيذ؟", "options": ["Inheritance", "Encapsulation", "Polymorphism", "Loop"], "correct_index": 1 },
+      { "id": 26, "question": "أي لغة برمجة تدعم OOP؟", "options": ["HTML", "Java", "CSS", "SQL"], "correct_index": 1 },
+      { "id": 27, "question": "Inheritance تعني:", "options": ["نسخ الكود", "توريث الخصائص والوظائف", "إخفاء البيانات", "تنفيذ أوامر"], "correct_index": 1 },
+      { "id": 28, "question": "Polymorphism تعني:", "options": ["سلوك واحد", "أكثر من شكل", "تنفيذ خطي", "حدث"], "correct_index": 1 }
+    ],
+
+    "Intermediate": [
+      { "id": 29, "question": "لماذا تعتبر OOP مناسبة للبرامج الكبيرة؟", "options": ["تعقيد أقل", "تنظيم أفضل", "كود أقل", "تنفيذ أسرع"], "correct_index": 1 },
+      { "id": 30, "question": "ما نوع أسلوب التنفيذ في OOP؟", "options": ["Top-down", "Bottom-up", "Sequential", "Event"], "correct_index": 1 },
+      { "id": 31, "question": "أي مفهوم يعزز أمان البيانات؟", "options": ["Loop", "Encapsulation", "Procedure", "Event"], "correct_index": 1 },
+      { "id": 32, "question": "إعادة استخدام الكود تتم غالباً عبر:", "options": ["Inheritance", "Variables", "Loops", "Conditions"], "correct_index": 0 }
+    ],
+
+    "Advanced": [
+      { "id": 33, "question": "متى تكون OOP غير مناسبة؟", "options": ["برنامج صغير جداً", "نظام معقد", "تطبيق كبير", "نظام طويل"], "correct_index": 0 },
+      { "id": 34, "question": "أي نمط أسهل للمبتدئين؟", "options": ["OOP", "Procedural", "Event-Driven", "None"], "correct_index": 1 }
+    ]
+  },
+
+  "Procedural Programming": {
+    "Beginner": [
+      { "id": 35, "question": "كيف يتم تنفيذ البرنامج الإجرائي؟", "options": ["Random", "Sequential", "Event", "Parallel"], "correct_index": 1 },
+      { "id": 36, "question": "ما هي Function؟", "options": ["إجراء يعيد قيمة", "متغير", "كائن", "حلقة"], "correct_index": 0 },
+      { "id": 37, "question": "Procedure هي:", "options": ["تعيد قيمة", "لا تعيد قيمة", "كائن", "حدث"], "correct_index": 1 },
+      { "id": 38, "question": "من مزايا البرمجة الإجرائية:", "options": ["تعقيد", "سهولة التعلم", "تنظيم عالي", "تفاعل"], "correct_index": 1 },
+      { "id": 39, "question": "من عيوب البرمجة الإجرائية:", "options": ["سهولة", "صعوبة التوسعة", "سرعة", "وضوح"], "correct_index": 1 }
+    ],
+
+    "Intermediate": [
+      { "id": 40, "question": "ما نوع أسلوب التنفيذ في Procedural Programming؟", "options": ["Bottom-up", "Top-down", "Event", "Parallel"], "correct_index": 1 },
+      { "id": 41, "question": "Local Variable يعني:", "options": ["متغير عام", "متغير داخل دالة", "حدث", "كائن"], "correct_index": 1 },
+      { "id": 42, "question": "Global Variable يعني:", "options": ["داخل دالة", "متاح لكل البرنامج", "كائن", "حدث"], "correct_index": 1 }
+    ],
+
+    "Advanced": [
+      { "id": 43, "question": "لماذا تصعب صيانة البرامج الإجرائية الكبيرة؟", "options": ["لقلة المتغيرات", "لتداخل الكود", "لبساطة التنفيذ", "لقلة الأوامر"], "correct_index": 1 },
+      { "id": 44, "question": "أي نمط برمجي أنسب للتطبيقات الكبيرة؟", "options": ["Procedural", "OOP", "Sequential", "None"], "correct_index": 1 }
+    ]
   }
 }

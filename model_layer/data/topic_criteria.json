@@ -1,0 +1,62 @@
+{
+  "Event-Driven Programming": {
+    "unit": "Pearson BTEC Level 2 IT – Unit 5: Introduction to Programming",
+    "learning_aim": "A1",
+    "criteria": {
+      "P": [
+        "تحديد مفهوم البرمجة القائمة على الأحداث",
+        "التعرف على Event و Event Handler",
+        "ذكر المزايا والعيوب الأساسية"
+      ],
+      "M": [
+        "شرح دور Event Loop في تنفيذ البرنامج",
+        "توضيح كيفية تفاعل المستخدم مع النظام",
+        "شرح سبب ملاءمة النموذج القائم على الأحداث لتطبيقات تفاعلية"
+      ],
+      "D": [
+        "تقييم مدى ملاءمة البرمجة القائمة على الأحداث لحل برمجي مقترح",
+        "مقارنة هذا النموذج مع نماذج برمجة أخرى مع تبرير واضح"
+      ]
+    }
+  },
+
+  "Object-Oriented Programming": {
+    "unit": "Pearson BTEC Level 2 IT – Unit 5: Introduction to Programming",
+    "learning_aim": "A2",
+    "criteria": {
+      "P": [
+        "تحديد مفهوم البرمجة كائنية التوجه",
+        "التعرف على Class و Object و Attribute و Method",
+        "ذكر المزايا والعيوب الأساسية"
+      ],
+      "M": [
+        "شرح Encapsulation و Inheritance و Polymorphism",
+        "توضيح سبب استخدام OOP في البرامج الكبيرة"
+      ],
+      "D": [
+        "تقييم مدى ملاءمة OOP لحل برمجي معين",
+        "مقارنة OOP مع البرمجة الإجرائية مع تبرير منطقي"
+      ]
+    }
+  },
+
+  "Procedural Programming": {
+    "unit": "Pearson BTEC Level 2 IT – Unit 5: Introduction to Programming",
+    "learning_aim": "A3",
+    "criteria": {
+      "P": [
+        "تحديد مفهوم البرمجة الإجرائية",
+        "استخدام Instructions و Procedures و Functions",
+        "ذكر المزايا والعيوب الأساسية"
+      ],
+      "M": [
+        "شرح أسلوب التنفيذ المتسلسل Top-down",
+        "توضيح الفرق بين Local و Global Variables"
+      ],
+      "D": [
+        "تقييم مدى ملاءمة البرمجة الإجرائية لحل برمجي معين",
+        "مقارنتها مع OOP مع ذكر نقاط القوة والضعف"
+      ]
+    }
+  }
+}

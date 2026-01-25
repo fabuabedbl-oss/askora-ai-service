@@ -11,45 +11,52 @@ TOPIC_MAP = {
     "OOP": "oop",
 }
 
+ALLOWED_LEVELS = ["Beginner", "Intermediate", "Advanced"]
+
 
 def _load_rag(topic: str) -> str:
     key = TOPIC_MAP.get(topic)
     if not key:
-        raise ValueError(f"Unsupported topic: {topic}")
-
-    file_path = RAG_DIR / f"{key}.txt"
-    return file_path.read_text(encoding="utf-8")
+        return ""
+    path = RAG_DIR / f"{key}.txt"
+    return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
 def generate_explanation(topic: str, level: str = "Beginner") -> str:
+    if level not in ALLOWED_LEVELS:
+        level = "Beginner"
+
     rag = _load_rag(topic)
 
     if level == "Beginner":
-        style = "اشرح الفكرة بأسلوب مبسط جداً مع أمثلة من الحياة اليومية."
+        style = "اشرح الفكرة بأسلوب مبسط جداً مع أمثلة من الحياة اليومية وتجنب المصطلحات المعقدة."
     elif level == "Intermediate":
-        style = "اشرح بمستوى متوسط مع توضيح المصطلحات الأساسية."
+        style = "اشرح بمستوى متوسط مع توضيح المصطلحات وربطها بأمثلة برمجية بسيطة."
     else:
-        style = "اشرح بمستوى متقدم مع ربط المفاهيم البرمجية ببعضها."
+        style = "اشرح بمستوى متقدم مع ربط المفاهيم ببعضها وتوضيح الاستخدام العملي."
 
     prompt = f"""
-أنت مدرس BTEC IT في الأردن.
+أنت مدرس Pearson BTEC Level 2 IT في الأردن.
 
+الموضوع: {topic}
 المستوى: {level}
 
 قواعد:
-- اشرح بالعربية الفصحى المبسطة.
-- استخدم المصطلحات التقنية بالإنجليزية بين قوسين عند الحاجة.
-- لا تستخدم Markdown أو نقاط.
-
-الموضوع:
-{topic}
+- الشرح بالعربية الفصحى المبسطة
+- المصطلحات التقنية بالإنجليزية بين قوسين عند الحاجة
+- لا تستخدم Markdown
+- لا تذكر درجات أو تقييم
+- التزم بالمنهاج فقط
 
 Context:
 {rag}
 
-تعليمات الأسلوب:
+أسلوب الشرح:
 {style}
 """
 
     text = call_gemini(prompt)
-    return text.strip() if text else "MODEL_ERROR"
+    if text and text.strip():
+        return text.strip()
+
+    return rag[:800] if rag else "سيتم شرح هذا المفهوم بشكل مبسط في هذا الدرس."

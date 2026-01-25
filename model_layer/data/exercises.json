@@ -1,13 +1,94 @@
 {
   "Event-Driven Programming": {
     "Beginner": [
-      {
-        "id": 1,
-        "question": "اشرح ماذا يحدث عندما يضغط المستخدم على زر في تطبيق.",
-        "expected_points": ["Event", "حدث", "Event Handler", "معالج"]
-      }
+      { "id": 1, "question": "عرّف البرمجة القائمة على الأحداث.", "expected_points": ["Event", "حدث"] },
+      { "id": 2, "question": "اشرح معنى Event.", "expected_points": ["Event"] },
+      { "id": 3, "question": "ما المقصود بـ Event Handler؟", "expected_points": ["Event Handler"] },
+      { "id": 4, "question": "اذكر مثالاً على حدث في تطبيق.", "expected_points": ["ضغط", "زر"] },
+      { "id": 5, "question": "متى يعمل Event Handler؟", "expected_points": ["عند حدوث"] },
+      { "id": 6, "question": "لماذا تنتظر البرامج الأحداث؟", "expected_points": ["انتظار"] },
+      { "id": 7, "question": "اذكر ميزة واحدة للبرمجة القائمة على الأحداث.", "expected_points": ["تفاعلي"] },
+      { "id": 8, "question": "اذكر عيباً واحداً للبرمجة القائمة على الأحداث.", "expected_points": ["تعقيد"] }
     ],
-    "Intermediate": [],
-    "Advanced": []
+    "Intermediate": [
+      { "id": 9, "question": "اشرح دور Event Loop.", "expected_points": ["Event Loop"] },
+      { "id": 10, "question": "ما وظيفة Event Listener؟", "expected_points": ["Event Listener"] },
+      { "id": 11, "question": "اشرح تسلسل العمل عند الضغط على زر.", "expected_points": ["Event", "Handler"] },
+      { "id": 12, "question": "لماذا تعتبر مناسبة للتطبيقات التفاعلية؟", "expected_points": ["تفاعل"] },
+      { "id": 13, "question": "اشرح الفرق بين Event و Event Handler.", "expected_points": ["فرق"] },
+      { "id": 14, "question": "كيف يؤثر تعدد الأحداث على التنفيذ؟", "expected_points": ["تعدد"] },
+      { "id": 15, "question": "اشرح مفهوم Top-down في هذا النمط.", "expected_points": ["Top-down"] },
+      { "id": 16, "question": "كيف يتفاعل المستخدم مع البرنامج؟", "expected_points": ["مستخدم"] }
+    ],
+    "Advanced": [
+      { "id": 17, "question": "قيّم استخدام هذا النمط في تطبيق كبير.", "expected_points": ["تقييم"] },
+      { "id": 18, "question": "قارن بين Event-Driven و Procedural.", "expected_points": ["مقارنة"] },
+      { "id": 19, "question": "ناقش أثر كثرة الأحداث على الموارد.", "expected_points": ["موارد"] },
+      { "id": 20, "question": "متى لا يكون هذا النمط مناسباً؟", "expected_points": ["غير مناسب"] },
+      { "id": 21, "question": "حلل تعقيد تتبع التنفيذ.", "expected_points": ["تعقيد"] },
+      { "id": 22, "question": "اقترح حلاً لتقليل تعقيد الأحداث.", "expected_points": ["حل"] }
+    ]
+  },
+
+  "Object-Oriented Programming": {
+    "Beginner": [
+      { "id": 23, "question": "عرّف البرمجة كائنية التوجه.", "expected_points": ["Object", "Class"] },
+      { "id": 24, "question": "ما هو Object؟", "expected_points": ["Object"] },
+      { "id": 25, "question": "ما هو Class؟", "expected_points": ["Class"] },
+      { "id": 26, "question": "اذكر Attribute.", "expected_points": ["Attribute"] },
+      { "id": 27, "question": "اذكر Method.", "expected_points": ["Method"] },
+      { "id": 28, "question": "اذكر ميزة لـ OOP.", "expected_points": ["تنظيم"] },
+      { "id": 29, "question": "اذكر عيباً لـ OOP.", "expected_points": ["تعقيد"] },
+      { "id": 30, "question": "لماذا نستخدم الكائنات؟", "expected_points": ["كائنات"] }
+    ],
+    "Intermediate": [
+      { "id": 31, "question": "اشرح Encapsulation.", "expected_points": ["Encapsulation"] },
+      { "id": 32, "question": "اشرح Inheritance.", "expected_points": ["Inheritance"] },
+      { "id": 33, "question": "اشرح Polymorphism.", "expected_points": ["Polymorphism"] },
+      { "id": 34, "question": "كيف تساعد OOP في الصيانة؟", "expected_points": ["صيانة"] },
+      { "id": 35, "question": "اشرح Bottom-up execution.", "expected_points": ["Bottom-up"] },
+      { "id": 36, "question": "كيف يتم إعادة استخدام الكود؟", "expected_points": ["إعادة استخدام"] },
+      { "id": 37, "question": "لماذا تناسب البرامج الكبيرة؟", "expected_points": ["كبيرة"] },
+      { "id": 38, "question": "اشرح العلاقة بين Class و Object.", "expected_points": ["علاقة"] }
+    ],
+    "Advanced": [
+      { "id": 39, "question": "قارن بين OOP و Procedural.", "expected_points": ["مقارنة"] },
+      { "id": 40, "question": "قيّم استخدام OOP في نظام معقّد.", "expected_points": ["تقييم"] },
+      { "id": 41, "question": "ناقش أثر Encapsulation على الأمان.", "expected_points": ["أمان"] },
+      { "id": 42, "question": "متى تكون OOP غير مناسبة؟", "expected_points": ["غير مناسبة"] },
+      { "id": 43, "question": "حلل تعقيد تصميم OOP.", "expected_points": ["تعقيد"] },
+      { "id": 44, "question": "اقترح تحسيناً لتصميم كائني.", "expected_points": ["تحسين"] }
+    ]
+  },
+
+  "Procedural Programming": {
+    "Beginner": [
+      { "id": 45, "question": "عرّف البرمجة الإجرائية.", "expected_points": ["Procedural"] },
+      { "id": 46, "question": "ما المقصود بـ Instruction؟", "expected_points": ["Instruction"] },
+      { "id": 47, "question": "ما هي Procedure؟", "expected_points": ["Procedure"] },
+      { "id": 48, "question": "ما هي Function؟", "expected_points": ["Function"] },
+      { "id": 49, "question": "اذكر ميزة للبرمجة الإجرائية.", "expected_points": ["سهل"] },
+      { "id": 50, "question": "اذكر عيباً للبرمجة الإجرائية.", "expected_points": ["توسعة"] },
+      { "id": 51, "question": "كيف يتم تنفيذ البرنامج؟", "expected_points": ["Sequential"] },
+      { "id": 52, "question": "اذكر مثالاً على برنامج إجرائي.", "expected_points": ["مثال"] }
+    ],
+    "Intermediate": [
+      { "id": 53, "question": "اشرح Top-down execution.", "expected_points": ["Top-down"] },
+      { "id": 54, "question": "ما الفرق بين Local و Global variables؟", "expected_points": ["Local", "Global"] },
+      { "id": 55, "question": "كيف تساعد الدوال في التنظيم؟", "expected_points": ["تنظيم"] },
+      { "id": 56, "question": "لماذا إعادة الاستخدام أقل؟", "expected_points": ["إعادة"] },
+      { "id": 57, "question": "اشرح تسلسل التنفيذ.", "expected_points": ["تسلسل"] },
+      { "id": 58, "question": "كيف يتم تقسيم البرنامج؟", "expected_points": ["تقسيم"] },
+      { "id": 59, "question": "متى تكون مناسبة؟", "expected_points": ["برامج صغيرة"] },
+      { "id": 60, "question": "اشرح دور الإجراءات.", "expected_points": ["إجراءات"] }
+    ],
+    "Advanced": [
+      { "id": 61, "question": "قارن بينها وبين OOP.", "expected_points": ["مقارنة"] },
+      { "id": 62, "question": "قيّم قابليتها للتوسعة.", "expected_points": ["توسعة"] },
+      { "id": 63, "question": "ناقش مشاكل الصيانة.", "expected_points": ["صيانة"] },
+      { "id": 64, "question": "متى تكون الخيار الأفضل؟", "expected_points": ["أفضل"] },
+      { "id": 65, "question": "حلل محدوديتها في المشاريع الكبيرة.", "expected_points": ["محدودية"] },
+      { "id": 66, "question": "اقترح بديلاً مناسباً.", "expected_points": ["بديل"] }
+    ]
   }
 }

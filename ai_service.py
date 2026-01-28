@@ -46,7 +46,6 @@ def generate_exercise_item(
 ) -> Dict:
     level = level or "Beginner"
 
-    # -------- OFFICIAL QUESTION --------
     if not use_ai:
         topic_data = EXERCISES.get(topic, {})
         level_items = topic_data.get(level) or topic_data.get("Beginner", [])
@@ -69,7 +68,6 @@ def generate_exercise_item(
             "counted": False
         }
 
-    # -------- AI TUTOR --------
     last_id = LAST_FAILED_EXERCISE.get(topic)
     focus_points = None
 
@@ -136,6 +134,7 @@ def generate_quiz_item(
 ) -> Dict:
     level = level or "Beginner"
 
+    # ======= QUESTION BANK =======
     if not use_ai:
         items = QUIZZES.get(topic, {}).get(level, [])
         if items:
@@ -144,6 +143,9 @@ def generate_quiz_item(
                 "id": q["id"],
                 "question": q["question"],
                 "options": q["options"],
+                # ✅ التعديل هنا
+                "correct_index": q["correct_index"],
+                "correct_answer": q["options"][q["correct_index"]],
                 "source": "question_bank"
             }
 
@@ -154,11 +156,14 @@ def generate_quiz_item(
             "source": "empty_bank"
         }
 
+    # ======= AI GENERATED =======
     quiz = generate_ai_quiz(topic, level)
     return {
         "id": None,
         "question": quiz.get("question"),
         "options": quiz.get("options") or [],
+        "correct_index": quiz.get("correct_index"),
+        "correct_answer": quiz.get("correct_answer"),
         "source": "ai_generated"
     }
 
@@ -170,7 +175,15 @@ def evaluate_quiz_answer(
     for items in QUIZZES.get(topic, {}).values():
         for q in items:
             if q["id"] == quiz_id:
-                return evaluate_quiz(student_choice_index, q["correct_index"])
+                return evaluate_quiz(
+                    student_choice_index,
+                    q["correct_index"],
+                    q["options"],
+                    q.get(
+                        "explanation",
+                        "هذه هي الإجابة الصحيحة وفق المفهوم الأساسي في هذا الدرس."
+                    )
+                )
 
     return {"error": "QUIZ_NOT_FOUND"}
 

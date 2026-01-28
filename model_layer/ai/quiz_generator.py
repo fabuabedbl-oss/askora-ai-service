@@ -36,24 +36,17 @@ def _load_rag(topic: str) -> str:
 # =====================================================
 
 def _safe_json_parse(text: str) -> dict | None:
-    """
-    Safely extract JSON object from AI output
-    Handles trailing or leading text
-    """
     if not text:
         return None
 
     try:
         start = text.find("{")
         end = text.rfind("}") + 1
-
         if start == -1 or end == -1:
             return None
 
-        clean_text = text[start:end]
-        data = json.loads(clean_text)
+        data = json.loads(text[start:end])
 
-        # Basic structure validation
         if (
             isinstance(data, dict)
             and "question" in data
@@ -61,6 +54,8 @@ def _safe_json_parse(text: str) -> dict | None:
             and "correct_index" in data
             and isinstance(data["options"], list)
             and len(data["options"]) == 4
+            and isinstance(data["correct_index"], int)
+            and 0 <= data["correct_index"] < 4
         ):
             return data
 
@@ -70,13 +65,13 @@ def _safe_json_parse(text: str) -> dict | None:
     return None
 
 # =====================================================
-#                     CORE FUNCTION
+#                     CORE
 # =====================================================
 
 def generate_ai_quiz(topic: str, level: str) -> dict:
     """
-    Generate a single MCQ quiz question using AI.
-    Returns deterministic empty dict on failure.
+    Generate quiz WITH correct answer returned.
+    Backend can store correct_index & correct_answer safely.
     """
 
     rag = _load_rag(topic)
@@ -93,13 +88,13 @@ def generate_ai_quiz(topic: str, level: str) -> dict:
 - سؤال واحد فقط
 - 4 خيارات فقط
 - إجابة صحيحة واحدة
-- لا تخرج عن المنهاج
-- لا تضف شرح أو نص زائد
+- لا تضف شرح
+- لا نص إضافي خارج JSON
 
 Context:
 {rag}
 
-أعد النتيجة بصيغة JSON فقط بدون أي نص إضافي:
+أعد النتيجة بصيغة JSON فقط:
 {{
   "question": "",
   "options": ["", "", "", ""],
@@ -108,19 +103,29 @@ Context:
 """
 
     text = call_gemini(prompt)
-
     quiz = _safe_json_parse(text)
-    if quiz:
-        return quiz
 
-    # Fallback (AI failed)
+    if quiz:
+        idx = quiz["correct_index"]
+        return {
+            "question": quiz["question"],
+            "options": quiz["options"],
+            "correct_index": idx,
+            # ✅ النص الصريح للإجابة الصحيحة (للتخزين في DB)
+            "correct_answer": quiz["options"][idx],
+        }
+
+    # ---------- Fallback ----------
+    fallback_options = [
+        "مفهوم غير متعلق",
+        "مفهوم أساسي في الموضوع",
+        "مفهوم من درس آخر",
+        "إجابة غير صحيحة",
+    ]
+
     return {
         "question": "ما هو المفهوم الأساسي في هذا الدرس؟",
-        "options": [
-            "مفهوم غير متعلق",
-            "مفهوم أساسي في الموضوع",
-            "مفهوم من درس آخر",
-            "إجابة غير صحيحة"
-        ],
-        "correct_index": 1
+        "options": fallback_options,
+        "correct_index": 1,
+        "correct_answer": fallback_options[1],
     }
